@@ -1,19 +1,1939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DefenSys — Prototype</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F8FC; --surface:#EDF0F7; --card:#FFFFFF; --border:#E8EAF0; --border-strong:#D8DCE6; --track:#EEF0F4;
+    --text:#10151F; --text-dim:#6B7280; --text-faint:#9CA3AF;
+    --blue:#1D6FE0; --blue-dim:#EAF1FD;
+    --teal:#00BFA6; --teal-dim:#E3F9F5;
+    --low:#1FBF8F; --low-dim:#E5F8F1;
+    --mod:#FFA531; --mod-dim:#FFF3E1;
+    --high:#FF7A45; --high-dim:#FFEDE4;
+    --crit:#FF4757; --crit-dim:#FFE7E9;
+    --font-d:'Manrope',sans-serif; --font-b:'Inter',sans-serif;
+    --shadow-sm:0 1px 2px rgba(16,21,31,0.04);
+    --shadow-md:0 4px 16px rgba(16,21,31,0.06);
+    --shadow-lg:0 16px 40px -8px rgba(16,21,31,0.12);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:#FFFFFF;
+    font-family:var(--font-b); color:var(--text);
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:40px 16px 80px; gap:32px;
+  }
+  .rig{display:flex; gap:40px; flex-wrap:wrap; justify-content:center; align-items:flex-start;}
 
-FAILURE: Build failed with an exception.
+  .phone{
+    width:368px; height:750px; background:#F4F6FC; border-radius:44px;
+    border:10px solid #05070D; box-shadow:0 30px 70px -20px rgba(16,21,31,0.25), 0 8px 24px -8px rgba(16,21,31,0.12);
+    position:relative; overflow:hidden; display:flex; flex-direction:column;
+  }
+  .notch{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    width:120px; height:22px; background:#05070D; border-radius:12px; z-index:10;
+  }
+  .statusbar{
+    padding:22px 22px 6px; display:flex; justify-content:space-between; align-items:center;
+    font-size:12px; color:var(--text-dim); font-weight:500; position:relative; z-index:1;
+  }
+  .watchpill{
+    display:flex; align-items:center; gap:6px; padding:5px 11px; border-radius:20px;
+    background:var(--surface); border:1px solid var(--border); cursor:pointer;
+    font-size:11px; font-weight:600; transition:border-color .2s;
+  }
+  .watchpill.connected{color:var(--low);}
+  .watchpill.disconnected{color:var(--crit);}
+  .dot{width:6px; height:6px; border-radius:50%; background:currentColor;}
+  .dot.pulse{animation:blink 1.6s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1} 50%{opacity:.3}}
 
-* Where:
-Build file 'C:\Users\Ushasee Das\Downloads\New folder\defensys\android\build.gradle.kts' line: 19
+  .screen{flex:1; padding:10px 22px 22px; overflow-y:auto; display:flex; flex-direction:column; gap:18px; position:relative; background:
+      radial-gradient(560px 340px at -10% -10%, rgba(93,157,255,0.28), transparent 55%),
+      radial-gradient(480px 320px at 115% 8%, rgba(0,214,190,0.22), transparent 55%),
+      radial-gradient(520px 360px at 105% 95%, rgba(158,119,255,0.16), transparent 55%),
+      radial-gradient(460px 300px at -5% 85%, rgba(255,141,110,0.10), transparent 55%),
+      linear-gradient(170deg, #F8FAFF 0%, #F2F4FB 55%, #EEF1F9 100%);
+  }
+  .screen::-webkit-scrollbar{display:none;}
 
-* What went wrong:
-A problem occurred configuring project ':app'.
-> org.gradle.api.GradleException: Android sdkmanager did not install NDK 28.2.13676358 into C:\Android\Sdk.
+  h1.title{font-family:var(--font-d); font-size:22px; font-weight:800; letter-spacing:-0.01em;}
+  .eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-faint); font-weight:700;}
 
-* Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights from a Build Scan (powered by Develocity).
-> Get more help at https://help.gradle.org.
+  /* Risk gauge card */
+  .riskcard{
+    background:var(--card); border:1px solid var(--border); border-radius:24px;
+    padding:22px; display:flex; align-items:center; gap:18px; position:relative;
+    box-shadow:0 1px 2px rgba(16,21,31,0.03), 0 10px 24px rgba(16,21,31,0.05);
+  }
+  .gauge-wrap{position:relative; width:104px; height:104px; flex-shrink:0;}
+  .gauge-wrap svg{transform:rotate(-90deg);}
+  .gauge-track{stroke:var(--track); fill:none; stroke-width:9;}
+  .gauge-progress{fill:none; stroke-width:9; stroke-linecap:round; transition:stroke-dashoffset 1s ease, stroke .4s ease;}
+  .gauge-center{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;}
+  .gauge-center .lvl{font-family:var(--font-d); font-size:15px; font-weight:800;}
+  .gauge-center .lbl{font-size:9px; color:var(--text-faint); font-weight:600; text-transform:uppercase; letter-spacing:.04em;}
+  .risk-info .eyebrow{margin-bottom:4px;}
+  .risk-info .headline{font-family:var(--font-d); font-size:16px; font-weight:700;}
+  .risk-info .sub{font-size:11.5px; color:var(--text-dim); margin-top:4px; line-height:1.5;}
+  .risk-chip{display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:20px; font-size:10.5px; font-weight:700; margin-top:8px;}
 
-BUILD FAILED in 1m 23s
-Running Gradle task 'assembleDebug'...                             84.7s
-Error: Gradle task assembleDebug failed with exit code 1
+  /* Status card */
+  .statuscard{
+    background:var(--card); border:1px solid var(--border); border-radius:20px;
+    padding:18px 20px; display:flex; align-items:center; gap:14px;
+    box-shadow:0 1px 2px rgba(16,21,31,0.03); position:relative;
+  }
+  .statusicon{width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:19px; flex-shrink:0;}
+  .statuscard .big{font-family:var(--font-d); font-size:14.5px; font-weight:700;}
+  .statuscard .sub{font-size:11.5px; color:var(--text-dim); margin-top:1px;}
+
+  /* SOS */
+  .sos-wrap{display:flex; flex-direction:column; align-items:center; gap:12px; padding:6px 0 2px;}
+  .ring-outer{width:164px; height:164px; position:relative; display:flex; align-items:center; justify-content:center;}
+  .ring-outer svg{position:absolute; top:0; left:0; transform:rotate(-90deg); pointer-events:none;}
+  .cd-track{stroke:var(--track); fill:none; stroke-width:3;}
+  .cd-progress{stroke:var(--crit); fill:none; stroke-width:3; stroke-linecap:round; transition:stroke-dashoffset 1s linear;}
+  .sos-btn{
+    width:126px; height:126px; border-radius:50%; border:none; cursor:pointer;
+    background:linear-gradient(155deg,#FF8A6B,#FF4757 65%);
+    color:#fff; font-family:var(--font-d); font-weight:800; font-size:14px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    box-shadow:0 12px 28px -6px rgba(255,71,87,0.45);
+    animation:sospulse 2.4s ease-in-out infinite;
+    position:relative; z-index:1;
+  }
+  .sos-btn i{font-size:23px;}
+  @keyframes sospulse{
+    0%{box-shadow:0 12px 28px -6px rgba(255,71,87,0.45), 0 0 0 0 rgba(255,71,87,0.25)}
+    70%{box-shadow:0 12px 28px -6px rgba(255,71,87,0.45), 0 0 0 20px rgba(255,71,87,0)}
+    100%{box-shadow:0 12px 28px -6px rgba(255,71,87,0.45), 0 0 0 0 rgba(255,71,87,0)}
+  }
+  .sos-hint{font-size:11px; color:var(--text-faint); text-align:center; max-width:230px;}
+
+  .tiles{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .tile{
+    background:var(--card); border:1px solid var(--border); border-radius:18px;
+    padding:15px; display:flex; flex-direction:column; gap:9px; cursor:pointer;
+    box-shadow:0 1px 2px rgba(16,21,31,0.03); transition:border-color .15s, transform .15s;
+  }
+  .tile:hover{border-color:var(--border-strong); transform:translateY(-1px);}
+  .tile-vivid{border:none; box-shadow:0 10px 24px -10px rgba(16,21,31,0.3);}
+  .tile-vivid:hover{transform:translateY(-2px); box-shadow:0 14px 28px -10px rgba(16,21,31,0.35);}
+  .tile .ic{width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px;}
+  .tile .t{font-size:12.5px; font-weight:700; font-family:var(--font-b);}
+  .tile .s{font-size:10.5px; color:var(--text-dim);}
+
+  .navbar{
+    display:flex; justify-content:space-between; align-items:center; gap:4px;
+    margin:0 14px 16px; padding:8px; border-radius:24px;
+    background:#FFFFFF; box-shadow:0 8px 24px -8px rgba(16,21,31,0.14), 0 1px 2px rgba(16,21,31,0.04);
+    border:1px solid var(--border); position:relative; z-index:1;
+  }
+  .navitem{
+    display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer;
+    color:var(--text-faint); font-size:9.5px; font-weight:700; background:none; border:none;
+    flex:1; padding:8px 4px; border-radius:16px; transition:background .18s ease, color .18s ease;
+  }
+  .navitem span{font-size:19px; line-height:1;}
+  .navitem.active{color:var(--blue); background:var(--blue-dim);}
+
+  .list{display:flex; flex-direction:column; gap:10px;}
+  .row{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:13px 15px; display:flex; align-items:center; gap:12px; box-shadow:0 1px 2px rgba(16,21,31,0.03);}
+  .row .ic{width:36px; height:36px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:15px; background:var(--surface); color:var(--text-dim); flex-shrink:0;}
+  .row .name{font-size:13px; font-weight:700;}
+  .row .meta{font-size:10.5px; color:var(--text-dim);}
+  .badge{margin-left:auto; font-size:10px; font-weight:700; padding:4px 9px; border-radius:20px;}
+  .badge.notified{background:var(--low-dim); color:var(--low);}
+  .badge.pending{background:var(--surface); color:var(--text-faint);}
+  .badge.live{background:var(--crit-dim); color:var(--crit);}
+  .badge.connecting{background:var(--mod-dim); color:var(--mod);}
+
+  .notice-row{border-style:dashed !important; background:var(--surface) !important;}
+  .activate-btn{width:100%; background:var(--crit); color:#fff; border:1.5px solid var(--crit); padding:14px; border-radius:14px; font-family:var(--font-b); font-weight:700; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:auto;}
+
+  .em-header{display:flex; flex-direction:column; align-items:center; gap:10px; padding:6px 0;}
+  .em-ring{width:132px; height:132px; border-radius:50%; background:var(--crit-dim); display:flex; align-items:center; justify-content:center;}
+  .em-ring .core{width:80px; height:80px; border-radius:50%; background:linear-gradient(155deg,#FF8A6B,#FF4757); display:flex; align-items:center; justify-content:center; font-size:30px; color:#fff; animation:sospulse 1.8s ease-in-out infinite;}
+  .em-title{font-family:var(--font-d); font-size:18px; font-weight:800; color:var(--crit); text-align:center;}
+  .em-sub{font-size:11.5px; color:var(--text-dim); text-align:center; max-width:260px; line-height:1.5;}
+  .steps{display:flex; flex-direction:column; gap:9px;}
+  .step{display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--card); border:1px solid var(--border); border-radius:14px; opacity:0.35; transition:opacity .3s; box-shadow:0 1px 2px rgba(16,21,31,0.03);}
+  .step.done{opacity:1;}
+  .step .chk{width:21px; height:21px; border-radius:50%; border:1px solid var(--border-strong); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:11px; color:#fff;}
+  .step.done .chk{background:var(--low); border-color:var(--low);}
+  .step .label{font-size:12px; font-weight:600;}
+  .safe-btn{margin-top:auto; background:var(--surface); border:1px solid var(--border-strong); color:var(--text); padding:14px; border-radius:14px; font-family:var(--font-b); font-weight:700; font-size:13px; cursor:pointer;}
+
+  .grace-title{font-family:var(--font-d); font-size:17px; font-weight:800; text-align:center;}
+  .grace-sub{font-size:11.5px; color:var(--text-dim); text-align:center;}
+
+  .toast{position:absolute; bottom:96px; left:20px; right:20px; background:var(--card); border:1px solid var(--border-strong); border-radius:16px; padding:14px 16px; font-size:11.5px; color:var(--text-dim); display:flex; gap:10px; align-items:flex-start; z-index:20; box-shadow:0 16px 34px rgba(16,21,31,0.14);}
+  .toast strong{color:var(--text); display:block; margin-bottom:2px; font-size:12px;}
+  .toast-actions{display:flex; align-items:center; gap:10px; margin-top:9px;}
+  .toast-dismiss{background:var(--text); color:#fff; border:none; padding:6px 14px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer; font-family:var(--font-b);}
+  .toast-auto{font-size:10px; color:var(--text-faint); font-weight:600;}
+  .toast i.warn{color:var(--mod); font-size:16px; flex-shrink:0; margin-top:1px;}
+  .toast-x{margin-left:auto; background:none; border:none; color:var(--text-faint); cursor:pointer; font-size:15px; flex-shrink:0; padding:2px;}
+
+  /* Live vitals */
+  .vitalscard{background:var(--card); border:1px solid var(--border); border-radius:20px; padding:16px 18px; box-shadow:0 1px 2px rgba(16,21,31,0.03); position:relative;}
+  .vitalscard .vhead{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding-right:22px;}
+  .vitalscard .vhead .eyebrow{margin:0;}
+  .live-pill{display:flex; align-items:center; gap:5px; font-size:9.5px; font-weight:700; color:var(--low); position:relative; z-index:1;}
+  .live-pill .dot{width:5px; height:5px; border-radius:50%; background:var(--low);}
+  .vgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .vstat{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:6px;}
+  .vstat-vivid{border:none; box-shadow:0 8px 20px -8px rgba(16,21,31,0.25);}
+  .vstat .vic{width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px;}
+  .vstat .vval{font-family:var(--font-d); font-size:16px; font-weight:800; margin-top:2px;}
+  .vstat .vval span{font-size:10.5px; font-weight:600; color:var(--text-faint); margin-left:2px;}
+  .vstat .vlbl{font-size:10px; color:var(--text-dim); font-weight:600;}
+
+  .vbig{background:var(--card); border:1px solid var(--border); border-radius:22px; padding:20px; box-shadow:0 1px 2px rgba(16,21,31,0.03); position:relative;}
+  .vbig-head{display:flex; align-items:center; justify-content:space-between;}
+  .vbig-num{font-family:var(--font-d); font-size:34px; font-weight:800; display:flex; align-items:baseline; gap:6px;}
+  .vbig-num span{font-size:12px; font-weight:600; color:var(--text-faint);}
+  .pulse-ic{width:38px; height:38px; border-radius:12px; background:var(--crit-dim); color:var(--crit); display:flex; align-items:center; justify-content:center; font-size:17px; animation:sospulse 1.6s ease-in-out infinite; position:relative; z-index:1;}
+  .spark{width:100%; height:52px; margin-top:10px;}
+  .stress-row{display:flex; align-items:center; gap:14px; margin-top:4px;}
+  .stress-bar-track{flex:1; height:8px; border-radius:20px; background:var(--surface); overflow:hidden;}
+  .stress-bar-fill{height:100%; border-radius:20px; transition:width .8s ease, background .4s ease;}
+
+  /* Avatar */
+  .avatar-btn{width:30px; height:30px; border-radius:50%; border:1px solid var(--border-strong); background:linear-gradient(155deg,#8EC5FF,#1D6FE0); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--font-d); font-weight:800; font-size:12px; cursor:pointer; flex-shrink:0;}
+
+  /* Watch connection card */
+  .watchcard{background:var(--card); border:1px solid var(--border); border-radius:20px; padding:16px 18px; box-shadow:0 1px 2px rgba(16,21,31,0.03); display:flex; align-items:center; gap:14px; position:relative;}
+  .watchcard .wic{width:44px; height:44px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;}
+  .watchcard .wtitle{font-size:13px; font-weight:700;}
+  .watchcard .wmeta{font-size:10.5px; color:var(--text-dim); margin-top:2px; display:flex; gap:10px; align-items:center;}
+  .watchcard .wtoggle{margin-left:auto; font-size:10.5px; font-weight:700; padding:7px 13px; border-radius:20px; border:1px solid var(--border-strong); background:var(--surface); color:var(--text); cursor:pointer; flex-shrink:0;}
+  .sigbars{display:inline-flex; align-items:flex-end; gap:2px; height:10px;}
+  .sigbars span{width:3px; background:var(--low); border-radius:1px;}
+
+  /* Profile screen */
+  .profile-head{display:flex; flex-direction:column; align-items:center; gap:10px; padding:8px 0 4px;}
+  .avatar-lg{width:72px; height:72px; border-radius:50%; background:linear-gradient(155deg,#8EC5FF,#1D6FE0); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--font-d); font-weight:800; font-size:26px;}
+  .profile-head .pname{font-family:var(--font-d); font-size:18px; font-weight:800;}
+  .profile-head .psub{font-size:11.5px; color:var(--text-dim);}
+  .edit-btn{background:var(--blue-dim); color:var(--blue); border:none; padding:9px 18px; border-radius:20px; font-size:11.5px; font-weight:700; cursor:pointer; margin-top:4px;}
+
+  /* Map screen */
+  .mapwrap{position:relative; border-radius:22px; overflow:hidden; border:1px solid var(--border); height:280px; background:
+      linear-gradient(#F1F3F7,#F1F3F7),
+      repeating-linear-gradient(0deg, transparent, transparent 38px, #E3E6EC 38px, #E3E6EC 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 54px, #E3E6EC 54px, #E3E6EC 56px);
+    box-shadow:0 1px 2px rgba(16,21,31,0.03);}
+  .map-road{position:absolute; background:#DCE0E8;}
+  .map-pin{position:absolute; transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center;}
+  .map-pin .dot-outer{width:34px; height:34px; border-radius:50%; background:rgba(29,111,224,0.18); display:flex; align-items:center; justify-content:center; animation:sospulse 2s ease-in-out infinite;}
+  .map-pin .dot-inner{width:16px; height:16px; border-radius:50%; background:var(--blue); border:3px solid #fff; box-shadow:0 2px 6px rgba(16,21,31,0.2);}
+  .zone-pin{position:absolute; transform:translate(-50%,-100%);}
+  .zone-pin .zp{width:26px; height:26px; border-radius:50% 50% 50% 0; background:var(--mod); transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(16,21,31,0.2);}
+  .zone-pin .zp i{transform:rotate(45deg); color:#fff; font-size:12px;}
+  .map-card{background:var(--card); border:1px solid var(--border-strong); border-radius:18px; padding:14px 16px; box-shadow:0 1px 2px rgba(16,21,31,0.03); display:flex; align-items:center; gap:12px; position:relative;}
+  .map-card > div:not(.ic){padding-right:22px;}
+  .card-watermark{position:absolute; top:16px; right:16px; opacity:0.9; z-index:0;}
+
+  /* Brand */
+  .brand{display:flex; align-items:center; gap:8px;}
+  .brand-mark{width:22px; height:22px; flex-shrink:0;}
+  .brand-word{font-family:var(--font-d); font-size:12.5px; font-weight:800; letter-spacing:-0.01em; color:var(--text);}
+
+  /* Premium hero header */
+  .hero{
+    border-radius:26px; padding:22px 22px 24px; position:relative; overflow:hidden;
+    background:linear-gradient(135deg,#1D6FE0 0%,#3B8AF0 45%,#5FA8FF 100%);
+    box-shadow:0 20px 40px -16px rgba(29,111,224,0.45);
+  }
+  .hero::before{
+    content:''; position:absolute; top:-60px; right:-40px; width:200px; height:200px;
+    background:radial-gradient(circle, rgba(255,255,255,0.18), transparent 70%); border-radius:50%;
+  }
+  .hero-top{display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1;}
+  .hero-greeting{font-family:var(--font-b); font-size:12.5px; color:#FFFFFF; font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,0.15); opacity:0.95;}
+  .hero-name{font-family:var(--font-d); font-size:17px; font-weight:800; color:#fff; margin-top:2px;}
+  .hero-shield{width:40px; height:40px; border-radius:14px; background:rgba(255,255,255,0.18); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; font-size:18px;}
+  .hero-status{display:flex; align-items:center; gap:10px; margin-top:16px; position:relative; z-index:1;}
+  .hero-status-dot{width:9px; height:9px; border-radius:50%; background:#fff; box-shadow:0 0 0 4px rgba(255,255,255,0.25);}
+  .hero-status-text{font-family:var(--font-d); font-size:15px; font-weight:700; color:#fff;}
+  .hero-status-sub{font-size:11px; color:rgba(255,255,255,0.8); margin-top:1px;}
+
+  /* Premium button press feedback */
+  .tile, .row, .sos-btn, .wtoggle, .activate-btn, .safe-btn{transition:transform .12s ease, box-shadow .12s ease, border-color .15s ease;}
+  .tile:active, .row:active{transform:scale(0.98);}
+  .sos-btn:active{transform:scale(0.96);}
+  /* Refined visual direction: midnight glass, softer hierarchy and warm signal colours */
+  :root{
+    --bg:#fff6fa; --surface:#fff0f6; --card:rgba(255,255,255,.95); --border:rgba(112,49,78,.10); --border-strong:rgba(112,49,78,.18); --track:#f5e8ee;
+    --text:#321b2b; --text-dim:#806979; --text-faint:#ae98a5; --blue:#c75b88; --blue-dim:#fff0f6;
+    --teal:#319d89; --teal-dim:#e4f8f3; --low:#249a77; --low-dim:#e5f8f0; --mod:#d88a36; --mod-dim:#fff2e2; --high:#eb765d; --high-dim:#fff0ea; --crit:#dc4b68; --crit-dim:#ffeaef;
+    --shadow-sm:0 2px 8px rgba(93,35,61,.06); --shadow-md:0 12px 28px rgba(93,35,61,.10); --shadow-lg:0 22px 45px rgba(93,35,61,.18);
+  }
+  body{
+    background:
+      radial-gradient(circle at 14% 8%, rgba(255,185,211,.65), transparent 30%),
+      radial-gradient(circle at 86% 82%, rgba(246,174,204,.48), transparent 32%),
+      linear-gradient(135deg,#fff8fb 0%,#fdebf3 48%,#fff4f8 100%);
+    min-height:100vh; padding:48px 20px 84px; position:relative;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.38;background-image:linear-gradient(rgba(185,89,133,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(185,89,133,.08) 1px,transparent 1px);background-size:52px 52px;mask-image:linear-gradient(to bottom,black,transparent 80%);}
+  .rig{gap:56px;position:relative;z-index:1;}
+  .phone{width:390px;height:812px;padding:0;border:9px solid #28131f;border-radius:48px;background:#fff7fa;box-shadow:0 34px 85px rgba(96,37,64,.26),0 0 0 1px rgba(255,255,255,.7);}
+  .notch{top:8px;width:128px;height:25px;border-radius:0 0 16px 16px;}
+  .statusbar{padding:23px 24px 7px;font-size:11.5px;color:#7b8799;}
+  .screen{padding:12px 20px 20px;gap:16px;background:radial-gradient(420px 260px at 5% -6%,rgba(255,186,213,.34),transparent 60%),radial-gradient(360px 260px at 100% 100%,rgba(243,178,207,.23),transparent 60%),linear-gradient(160deg,#fffdfd 0%,#fff3f7 100%);}
+  .brand-word{letter-spacing:-.03em;}.brand-mark{filter:drop-shadow(0 3px 5px rgba(199,91,136,.25));}
+  h1.title{font-size:23px;letter-spacing:-.045em;}.eyebrow{font-size:9.5px;letter-spacing:.12em;color:#8994a7;}
+  .watchpill{background:rgba(255,255,255,.74);backdrop-filter:blur(10px);padding:6px 11px;box-shadow:var(--shadow-sm);}
+  .hero{border-radius:25px;padding:21px 21px 23px;background:linear-gradient(132deg,#bd4e7f 0%,#e77ea7 52%,#f3a8c4 100%);box-shadow:0 18px 34px -13px rgba(177,62,112,.46);}
+  .hero::after{content:"";position:absolute;width:175px;height:175px;right:-60px;bottom:-100px;border-radius:50%;border:28px solid rgba(255,255,255,.09);}
+  .hero-shield{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.14);}
+  .riskcard,.statuscard,.vitalscard,.vbig,.watchcard,.row,.tile{border-color:rgba(30,47,75,.08);box-shadow:0 8px 22px rgba(31,48,77,.055);}
+  .riskcard{border-radius:22px;padding:19px;}.statuscard{border-radius:18px;}.row{border-radius:15px;}.tile{border-radius:17px;}
+  .gauge-track{stroke:#f7ebf0;}.gauge-progress{filter:drop-shadow(0 2px 2px rgba(199,91,136,.18));}
+  .vstat{background:#f7f8fc;border-color:rgba(30,47,75,.06);}.vstat-vivid{box-shadow:0 10px 22px -10px rgba(49,64,120,.3);}
+  .sos-btn{background:linear-gradient(145deg,#fa7d7d 0%,#e95063 64%,#c93d5c 100%);box-shadow:0 17px 30px -9px rgba(217,60,84,.56);}
+  .navbar{margin:0 12px 14px;padding:7px;border-radius:23px;background:rgba(255,255,255,.9);backdrop-filter:blur(16px);box-shadow:0 12px 30px -12px rgba(20,31,58,.24);}
+  .navitem.active{background:#fff0f6;color:#c75b88;}.navitem{border-radius:14px;}
+  .activate-btn{border:none;border-radius:15px;background:linear-gradient(135deg,#e95063,#d94162);box-shadow:0 10px 20px -11px rgba(217,60,84,.65);}
+  .safe-btn{border-radius:15px;background:rgba(255,255,255,.72);}.toast{border-color:rgba(30,47,75,.1);box-shadow:0 18px 42px rgba(19,30,55,.2);}
+  .mapwrap{border-radius:20px;}.avatar-btn,.avatar-lg{background:linear-gradient(145deg,#ef9cbb,#c75b88);box-shadow:0 8px 18px -8px rgba(199,91,136,.45);}
+  @media (max-width:440px){body{padding:0;background:#fff6fa}.rig{width:100%}.phone{width:100%;height:100vh;border-radius:0;border-width:0;box-shadow:none}.notch{top:0}.screen{padding-left:18px;padding-right:18px}}
+</style>
+<link rel="stylesheet" href="defensys-theme.css">
+<script src="java.js"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute;">
+  <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#8EC5FF"/><stop offset="100%" stop-color="#1D6FE0"/>
+  </linearGradient></defs>
+</svg>
+
+<div class="rig">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="statusbar">
+      <span id="clock">9:41</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button class="avatar-btn" onclick="nav('profile')">AS</button>
+        <div class="watchpill" id="watchpill" onclick="toggleWatch()">
+          <span class="dot pulse" id="wdot"></span>
+          <span id="wtext">Watch connected</span>
+        </div>
+      </div>
+    </div>
+    <div class="screen" id="screen"></div>
+    <div class="navbar">
+      <button class="navitem active" id="nav-home" onclick="nav('home')"><span>🏠</span>Home</button>
+      <button class="navitem" id="nav-vitals" onclick="nav('vitals')"><span>💓</span>Vitals</button>
+      <button class="navitem" id="nav-zones" onclick="nav('zones')"><span>📍</span>Zones</button>
+      <button class="navitem" id="nav-contacts" onclick="nav('contacts')"><span>👥</span>Contacts</button>
+      <button class="navitem" id="nav-settings" onclick="nav('settings')"><span>⚙️</span>Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase v10 setup -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    doc,
+    updateDoc,
+    serverTimestamp
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  import {
+    getAuth,
+    onAuthStateChanged,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    updateProfile
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+  const FIREBASE_CONFIG = {
+    apiKey: 'AIzaSyCJbFjpZ8WVdEvikEjNeYHD5fLPDCBYVtY',
+    authDomain: 'defynsis.firebaseapp.com',
+    projectId: 'defynsis',
+    storageBucket: 'defynsis.firebasestorage.app',
+    messagingSenderId: '284288629418',
+    appId: '1:284288629418:web:14d5adef43c0dee76a6ed3',
+    measurementId: 'G-7VSBYMTFQY'
+  };
+
+  const GOOGLE_MAPS_API_KEY = '';
+  window.GOOGLE_MAPS_API_KEY = GOOGLE_MAPS_API_KEY;
+
+  const configIsPlaceholder = Object.values(FIREBASE_CONFIG)
+    .some(value => String(value).includes('PASTE_YOUR_'));
+  let db = null;
+  let auth = null;
+  let currentLocation = { lat: null, lon: null };
+  let liveLocationWatchId = null;
+  let currentAuthUser = null;
+
+  // getUserMedia (mic/camera) is blocked by browsers on file:// pages and any
+  // non-HTTPS origin. This is the #1 cause of "recording doesn't work" reports.
+  window.__defensysInsecureContext__ = !window.isSecureContext;
+  if (window.__defensysInsecureContext__) {
+    console.warn(
+      '[DefenSys] This page is not running in a secure context (' + window.location.protocol + '). ' +
+      'Microphone and camera access will be blocked by the browser. ' +
+      'Serve this file over http://localhost or https:// instead of opening it directly.'
+    );
+  }
+  let liveTriggerSessionStarted = false;
+  let motionListenerEnabled = false;
+  let motionHits = [];
+  let lastMotionHitAt = 0;
+
+  // Live status other code (renderHome's status badge) polls this so the
+  // shake/gesture trigger state is visible on-screen, not just in console.
+  window.__defensysGestureStatus = {
+    armed: false,          // true once devicemotion listener is attached
+    supported: ('DeviceMotionEvent' in window),
+    lastError: null,       // e.g. 'permission-denied', 'unsupported'
+    lastShakeAt: null,
+    hits: 0
+  };
+
+  if (configIsPlaceholder) {
+    console.warn('[DefenSys] Firebase is not configured yet.');
+  } else {
+    try {
+      const firebaseApp = initializeApp(FIREBASE_CONFIG);
+      db = getFirestore(firebaseApp);
+      auth = getAuth(firebaseApp);
+      console.info('[DefenSys] Firebase connected.');
+
+      onAuthStateChanged(auth, (user) => {
+        currentAuthUser = user
+          ? { uid: user.uid, email: user.email, displayName: user.displayName }
+          : null;
+        if (typeof window.__defensysAuthReady__ === 'function') {
+          window.__defensysAuthReady__(currentAuthUser);
+        } else if (typeof window.__defensysRerender__ === 'function') {
+          window.__defensysRerender__();
+        }
+      });
+    } catch (error) {
+      console.error('[DefenSys] Firebase initialization failed:', error);
+    }
+  }
+
+  window.getDefenSysAuthUser = () => currentAuthUser;
+
+  window.defenSysSignUp = async (name, email, password) => {
+    if (!auth) return { ok: false, error: 'Firebase Authentication is not configured yet.' };
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      if (name) await updateProfile(cred.user, { displayName: name });
+      currentAuthUser = { uid: cred.user.uid, email: cred.user.email, displayName: name || null };
+      return { ok: true };
+    } catch (error) {
+      console.error('[DefenSys] Sign-up failed:', error);
+      return { ok: false, error: error.message };
+    }
+  };
+
+  window.defenSysLogin = async (email, password) => {
+    if (!auth) return { ok: false, error: 'Firebase Authentication is not configured yet.' };
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      return { ok: true };
+    } catch (error) {
+      console.error('[DefenSys] Login failed:', error);
+      return { ok: false, error: error.message };
+    }
+  };
+
+  window.defenSysLogout = async () => {
+    if (!auth) return;
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('[DefenSys] Sign-out failed:', error);
+    }
+  };
+
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        currentLocation = {
+          lat: Number(position.coords.latitude.toFixed(7)),
+          lon: Number(position.coords.longitude.toFixed(7))
+        };
+        if(typeof window.__defensysRerender__ === 'function') window.__defensysRerender__();
+      },
+      error => {
+        console.warn('[DefenSys] Location unavailable:', error.message);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  }
+
+  window.getDefenSysLocation = () => currentLocation;
+  window.writeSafetyEvent = async ({ riskLevel, heartRate, lat, lon }) => {
+    if (!db) return null;
+    const event = {
+      riskLevel,
+      heartRate: Number(heartRate),
+      lat: lat ?? currentLocation.lat,
+      lon: lon ?? currentLocation.lon,
+      timestamp: serverTimestamp()
+    };
+
+    try {
+      const eventRef = await addDoc(collection(db, 'events'), event);
+      return eventRef.id;
+    } catch (error) {
+      console.error('[DefenSys] Firestore event write failed:', error);
+      return null;
+    }
+  };
+
+  function getCurrentDeviceLocation() {
+    if (!('geolocation' in navigator)) return Promise.resolve(currentLocation);
+    return new Promise(resolve => {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          currentLocation = {
+            lat: Number(position.coords.latitude.toFixed(7)),
+            lon: Number(position.coords.longitude.toFixed(7))
+          };
+          resolve(currentLocation);
+        },
+        error => resolve(currentLocation),
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
+      );
+    });
+  }
+
+  function startLiveLocationUpdates(incidentId) {
+    if (!('geolocation' in navigator)) return;
+    if (liveLocationWatchId !== null) {
+      navigator.geolocation.clearWatch(liveLocationWatchId);
+    }
+
+    liveLocationWatchId = navigator.geolocation.watchPosition(
+      async position => {
+        currentLocation = {
+          lat: Number(position.coords.latitude.toFixed(7)),
+          lon: Number(position.coords.longitude.toFixed(7))
+        };
+        try {
+          await updateDoc(doc(db, 'incidents', incidentId), {
+            latitude: currentLocation.lat,
+            longitude: currentLocation.lon
+          });
+        } catch (error) {
+          console.error('[DefenSys] Live location update failed:', error);
+        }
+      },
+      error => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
+  }
+
+  window.stopDefenSysLiveLocation = () => {
+    if (liveLocationWatchId !== null && 'geolocation' in navigator) {
+      navigator.geolocation.clearWatch(liveLocationWatchId);
+      liveLocationWatchId = null;
+    }
+  };
+
+  function getDefenSysUserId() {
+    if (currentAuthUser) return currentAuthUser.uid;
+    const storageKey = 'defensysUserId';
+    try {
+      let userId = localStorage.getItem(storageKey);
+      if (!userId) {
+        userId = window.crypto?.randomUUID
+          ? window.crypto.randomUUID()
+          : `device-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        localStorage.setItem(storageKey, userId);
+      }
+      return userId;
+    } catch (error) {
+      return 'device-session';
+    }
+  }
+
+  window.createDefenSysIncident = async (contactsList, triggerType = 'SOS') => {
+    if (!db) return null;
+    const location = await getCurrentDeviceLocation();
+    const safeContacts = Array.isArray(contactsList)
+      ? contactsList
+          .filter(c => c && c.phone && !String(c.phone).includes('X'))
+          .map(c => ({ name: c.name, phone: c.phone }))
+      : [];
+
+    const incident = {
+      userId: getDefenSysUserId(),
+      triggerType,
+      latitude: location.lat,
+      longitude: location.lon,
+      contacts: safeContacts,
+      timestamp: serverTimestamp(),
+      status: 'active',
+    };
+
+    try {
+      const incidentRef = await addDoc(collection(db, 'incidents'), incident);
+      startLiveLocationUpdates(incidentRef.id);
+      return incidentRef.id;
+    } catch (error) {
+      console.error('[DefenSys] Firestore incident creation failed:', error);
+      return null;
+    }
+  };
+
+  // Code-word (voice trigger) detection now lives in java.js,
+  // which exposes window.startDefenSysCodeWordListener() / stopDefenSysCodeWordListener().
+  function startCodeWordListener() {
+    if (typeof window.startDefenSysCodeWordListener !== 'function') {
+      console.warn('[DefenSys] java.js was not loaded, code word listener unavailable.');
+      return false;
+    }
+    return window.startDefenSysCodeWordListener();
+  }
+
+  function handleDeviceMotion(event) {
+    const acceleration = event.accelerationIncludingGravity || event.acceleration;
+    if (!acceleration) return;
+    const magnitude = Math.sqrt(
+      (acceleration.x || 0) ** 2 +
+      (acceleration.y || 0) ** 2 +
+      (acceleration.z || 0) ** 2
+    );
+    const now = Date.now();
+    if (magnitude < 22 || now - lastMotionHitAt < 180) return;
+
+    lastMotionHitAt = now;
+    motionHits = motionHits.filter(hit => now - hit < 1800);
+    motionHits.push(now);
+    window.__defensysGestureStatus.lastShakeAt = now;
+    window.__defensysGestureStatus.hits = motionHits.length;
+    if (motionHits.length >= 3) {
+      motionHits = [];
+      window.__defensysGestureStatus.hits = 0;
+      if (typeof window.simulate === 'function') {
+        window.simulate('gesture');
+      } else {
+        console.warn('[DefenSys][gesture] Triple-shake matched, but window.simulate() is not defined yet.');
+      }
+    }
+  }
+
+  async function startGestureListener() {
+    if (motionListenerEnabled) return true;
+    if (!('DeviceMotionEvent' in window)) {
+      window.__defensysGestureStatus.supported = false;
+      window.__defensysGestureStatus.lastError = 'unsupported';
+      console.warn('[DefenSys][gesture] DeviceMotionEvent is not supported in this browser.');
+      return false;
+    }
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+      try {
+        const permission = await DeviceMotionEvent.requestPermission();
+        if (permission !== 'granted') {
+          window.__defensysGestureStatus.lastError = 'permission-denied';
+          console.warn('[DefenSys][gesture] Motion permission was not granted.');
+          return false;
+        }
+      } catch (error) {
+        window.__defensysGestureStatus.lastError = error.message;
+        console.warn('[DefenSys][gesture] Permission request failed:', error.message);
+        return false;
+      }
+    }
+    window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
+    motionListenerEnabled = true;
+    window.__defensysGestureStatus.armed = true;
+    window.__defensysGestureStatus.lastError = null;
+    console.info('[DefenSys][gesture] Shake listener armed.');
+    return true;
+  }
+
+  window.startDefenSysLiveTriggers = async () => {
+    liveTriggerSessionStarted = true;
+    startCodeWordListener();
+    await startGestureListener();
+  };
+
+  window.stopDefenSysLiveTriggers = () => {
+    if (typeof window.stopDefenSysCodeWordListener === 'function') {
+      window.stopDefenSysCodeWordListener();
+    }
+    if (motionListenerEnabled) {
+      window.removeEventListener('devicemotion', handleDeviceMotion);
+      motionListenerEnabled = false;
+      window.__defensysGestureStatus.armed = false;
+    }
+    liveTriggerSessionStarted = false;
+  };
+
+  // Start on first interaction anywhere
+  document.addEventListener('click', () => {
+    window.startDefenSysLiveTriggers();
+  }, { once: true });
+
+  const MAX_INLINE_AUDIO_CHARS = 900000;
+
+  window.attachAudioToIncident = async (incidentId, base64DataUrl, durationSeconds) => {
+    if (!db || !incidentId) return false;
+    if (base64DataUrl && base64DataUrl.length > MAX_INLINE_AUDIO_CHARS) {
+      console.warn('[DefenSys] Recording too large to store inline in Firestore.');
+      return false;
+    }
+
+    try {
+      await updateDoc(doc(db, 'incidents', incidentId), {
+        audioBase64: base64DataUrl,
+        audioDurationSeconds: durationSeconds ?? null,
+        audioSavedAt: serverTimestamp()
+      });
+      return true;
+    } catch (error) {
+      console.error('[DefenSys] Failed to attach audio evidence:', error);
+      return false;
+    }
+  };
+</script>
+
+<script>
+let state = {
+  screen: 'home',
+  watchConnected: true,
+  emergency: 'idle', // idle | grace | active
+  graceLeft: 5,
+  graceTimer: null,
+  toast: null,
+  toastTimer: null,
+  activeSteps: [],
+  emergencyStartedAt: null,
+  emergencyStartedLabel: null,
+  risk: 'low', // low | moderate | high | critical
+  vitals: { hr: 72, steps: 4231, movement: 'Active' },
+  hrHistory: [70,71,73,72,74,72,71,73,75,72,71,72,73,72,74,72,71,72,73,72],
+  watchDetail: { battery: 82, signal: 4, lastSync: 'Just now', lastHr: 72, lastHrTime: 'Just now' },
+  gesture: { trained: true, samples: 5, lastTriggered: null },
+  codeWord: { phrase: 'AEGIS', lastTriggered: null },
+  triggerType: 'SOS',
+  profile: { name: 'Aditi Sharma', initials: 'AS', age: 22, blood: 'O+', note: 'No known allergies', contacts: 3, email: null },
+  currentIncidentId: null,
+  recording: { status: 'idle', mode: null, mediaRecorder: null, stream: null, chunks: [], startedAt: null, lastClipUrl: null, lastClipBase64: null, lastClipDuration: null },
+  mediaLog: [],
+  gestureLog: [],
+  authScreen: 'login',
+  authError: null,
+  authBusy: false,
+  skippedAuth: (typeof localStorage !== 'undefined' && localStorage.getItem('defensysSkippedAuth') === '1')
+};
+
+const RISK = {
+  low:      {label:'Low',      color:'#1FBF8F', dim:'#E5F8F1', pct:0.16, headline:'No signs of distress', sub:'Current signals are within your normal range.'},
+  moderate: {label:'Moderate', color:'#FFA531', dim:'#FFF3E1', pct:0.48, headline:'Slight deviation detected', sub:'Monitoring closely — a trigger is being evaluated against your baseline.'},
+  high:     {label:'High',     color:'#FF7A45', dim:'#FFEDE4', pct:0.74, headline:'Distress signals rising', sub:'Multiple indicators point to possible danger. Emergency mode is activating.'},
+  critical: {label:'Critical', color:'#FF4757', dim:'#FFE7E9', pct:1.0,  headline:'Active emergency', sub:'High-confidence distress detected. Contacts and authorities are being alerted.'}
+};
+
+function tickVitals(){
+  const v = state.vitals;
+  const band = state.emergency === 'active' ? [95,140] : state.emergency === 'grace' ? [85,120] : [64,92];
+  let next = v.hr + (Math.random()*10 - 5);
+  next = Math.max(band[0], Math.min(band[1], Math.round(next)));
+  v.hr = next;
+  state.hrHistory.push(next);
+  if(state.hrHistory.length > 20) state.hrHistory.shift();
+
+  if(state.watchConnected){
+    state.watchDetail.lastHr = next;
+    state.watchDetail.lastHrTime = 'Just now';
+  }
+
+  if(v.movement === 'Active') v.steps += Math.round(Math.random()*8);
+
+  if(state.emergency === 'idle' && Math.random() < 0.15){
+    const cycle = ['Active','Idle','Still'];
+    v.movement = cycle[Math.floor(Math.random()*cycle.length)];
+  } else if(state.emergency !== 'idle'){
+    v.movement = 'Elevated motion';
+  }
+
+  // FIX EVIDENCE & VIDEO LAG: Only re-render if on screens that display live vitals
+  if (state.emergency === 'idle' && (state.screen === 'home' || state.screen === 'vitals')) {
+    render();
+  }
+}
+
+const contacts = [
+  {name:'Aarav Mehta', rel:'Brother', icon:'🧑', phone:'+91XXXXXXXXXX'},
+  {name:'Priya Nair', rel:'Roommate', icon:'🧑', phone:'+91XXXXXXXXXX'},
+  {name:'Mom', rel:'Emergency contact', icon:'❤️', phone:'+91XXXXXXXXXX'}
+];
+const zones = [
+  {name:'Night walk route — MG Road', level:'HIGH', dot:'🔴'},
+  {name:'College back gate lane', level:'MEDIUM', dot:'🟠'}
+];
+let emergencyHistory = [
+  {date:'22 Aug', time:'11:15 PM', title:'False alarm', sub:'Cancelled by user', details:[]},
+  {date:'19 Aug', time:'9:03 PM', title:'Emergency detected', sub:'Resolved — marked safe by user', details:['📍 Location recorded','🎙️ Audio evidence • 02:47','❤️ Last HR • 118 BPM']}
+];
+
+function nowTime(){
+  const d = new Date();
+  let h = d.getHours(); const m = d.getMinutes();
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if(h === 0) h = 12;
+  return `${h}:${m.toString().padStart(2,'0')} ${ap}`;
+}
+
+function nav(s){
+  state.screen = s;
+  document.querySelectorAll('.navitem').forEach(el=>el.classList.remove('active'));
+  const btn = document.getElementById('nav-'+s);
+  if(btn) btn.classList.add('active');
+  render();
+}
+
+function toggleWatch(){
+  state.watchConnected = !state.watchConnected;
+  render();
+}
+
+function setRisk(level){
+  state.risk = level;
+  writeCurrentSafetyEvent(level);
+}
+
+function showToast(icon, title, body){
+  clearTimeout(state.toastTimer);
+  state.toast = {icon, title, body, autoAt: Date.now() + 60000};
+  state.toastTimer = setTimeout(()=>{ dismissToast(); }, 60000);
+}
+
+let lastSafetyEvent = null;
+function writeCurrentSafetyEvent(level){
+  const location = typeof window.getDefenSysLocation === 'function'
+    ? window.getDefenSysLocation()
+    : {lat:null, lon:null};
+  const heartRate = Number(state.vitals.hr);
+  const fingerprint = `${level}|${heartRate}|${location.lat}|${location.lon}`;
+  const now = Date.now();
+
+  if(lastSafetyEvent &&
+     lastSafetyEvent.fingerprint === fingerprint &&
+     now - lastSafetyEvent.at < 500){
+    return;
+  }
+  lastSafetyEvent = {fingerprint, at:now};
+
+  if(typeof window.writeSafetyEvent === 'function'){
+    void window.writeSafetyEvent({
+      riskLevel: level,
+      heartRate,
+      lat: location.lat,
+      lon: location.lon
+    });
+  }
+}
+
+function triggerCodeWordManually() {
+  if (typeof window.startDefenSysLiveTriggers === 'function') {
+    window.startDefenSysLiveTriggers();
+  }
+  simulate('codeword');
+}
+
+function simulate(kind){
+  if((kind === 'gesture' || kind === 'codeword') && state.emergency !== 'idle'){
+    // Don't silently swallow this — a repeated trigger while already mid-emergency
+    // is easy to mistake for "the trigger didn't work at all".
+    console.info('[DefenSys] Trigger ignored — emergency already', state.emergency);
+    showToast('ℹ️', 'Already active', `You're already in ${state.emergency === 'grace' ? 'the cancel window' : 'emergency mode'}. Mark yourself safe first to test again.`);
+    render();
+    return;
+  }
+  state.toast = null;
+  state.triggerType = kind === 'gesture' ? 'GESTURE'
+    : kind === 'codeword' ? 'CODE_WORD'
+    : 'SOS';
+  const eventRisk = kind === 'lost-normal' ? 'low'
+    : kind === 'lost-abnormal' ? 'critical'
+    : 'moderate';
+  writeCurrentSafetyEvent(eventRisk);
+  
+  if(kind === 'gesture'){
+    state.gesture.lastTriggered = 'Just now';
+    state.gestureLog.unshift({date:'Today', time: nowTime()});
+    showToast('✋', 'Secret Gesture Detected', 'Emergency activation initiated via triple-shake.');
+  }
+  if(kind === 'codeword'){
+    state.codeWord.lastTriggered = 'Just now';
+    showToast('🎙️', 'Code Word Detected (“AEGIS”)', 'Emergency SOS sequence started via voice trigger.');
+  }
+  if(kind === 'lost-normal'){
+    state.watchConnected = false;
+    setRisk('low');
+    render();
+    return;
+  }
+  if(kind === 'lost-abnormal'){
+    state.watchConnected = false;
+    startEmergency();
+    return;
+  }
+  state.screen = 'sos';
+  startGrace();
+}
+
+function startGrace(){
+  state.emergency = 'grace';
+  state.graceLeft = 5;
+  setRisk('moderate');
+  render();
+  clearInterval(state.graceTimer);
+  state.graceTimer = setInterval(()=>{
+    state.graceLeft -= 1;
+    if(state.graceLeft <= 2) setRisk('high');
+    if(state.graceLeft <= 0){
+      clearInterval(state.graceTimer);
+      startEmergency();
+      return;
+    }
+    render();
+  },1000);
+}
+
+function cancelGrace(){
+  clearInterval(state.graceTimer);
+  emergencyHistory.unshift({date:'Today', time: nowTime(), title:'False alarm', sub:'Cancelled by user during countdown', details:[]});
+  state.emergency = 'idle';
+  setRisk('low');
+  nav('home');
+}
+
+function startEmergency(){
+  state.emergency = 'active';
+  state.emergencyStartedAt = Date.now();
+  state.emergencyStartedLabel = nowTime();
+  setRisk('critical');
+  state.activeSteps = [false,false,false,false];
+  render();
+  createEmergencyIncident();
+  startAudioRecording();
+  
+  [400,1200,2200,3200].forEach((d,i)=>{
+    setTimeout(()=>{
+      state.activeSteps[i] = true;
+      const stepEls = document.querySelectorAll('.step');
+      if (stepEls && stepEls[i]) {
+        stepEls[i].classList.add('done');
+        const chk = stepEls[i].querySelector('.chk');
+        if (chk) chk.textContent = '✅';
+      }
+      if(i === 3){
+        const callBadge = document.getElementById('emCallBadge');
+        const callMeta = document.getElementById('emCallMeta');
+        if(callBadge) { callBadge.className = 'badge notified'; callBadge.textContent = 'Connected'; }
+        if(callMeta) { callMeta.textContent = 'Connected to responder'; }
+      }
+    }, d);
+  });
+}
+
+function createEmergencyIncident(){
+  if(typeof window.createDefenSysIncident !== 'function') return;
+
+  window.createDefenSysIncident(contacts, state.triggerType).then(id=>{
+    state.currentIncidentId = id;
+    if(id && state.recording.status === 'saved' && state.recording.lastClipBase64){
+      window.attachAudioToIncident(id, state.recording.lastClipBase64, state.recording.lastClipDuration);
+    }
+  });
+}
+
+async function startAudioRecording(){
+  if(window.__defensysInsecureContext__){
+    state.recording.status = 'denied';
+    showToast('🔒', 'Recording blocked: insecure page', `You're viewing this over ${location.protocol} — browsers block the microphone/camera unless the page is served over https:// or http://localhost. Open this file through a local server (e.g. VS Code's "Live Server" extension, or run "python -m http.server" in its folder) instead of double-clicking it.`);
+    render();
+    return;
+  }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    state.recording.status = 'denied';
+    showToast('🎙️', 'Recording not supported', 'This browser does not support microphone/camera recording (mediaDevices API missing). Try the latest Chrome, Edge, or Safari.');
+    render();
+    return;
+  }
+  state.recording.status = 'requesting';
+  render();
+
+  let stream, mode;
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true },
+      video: {
+        width: { ideal: 480, max: 640 },
+        height: { ideal: 360, max: 480 },
+        frameRate: { ideal: 24, max: 30 },
+        facingMode: 'user'
+      }
+    });
+    mode = 'audio+video';
+  } catch(videoError){
+    console.warn('[DefenSys] Camera unavailable, falling back to audio-only:', videoError.name, videoError.message);
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      mode = 'audio-only';
+    } catch(audioError){
+      state.recording.status = 'denied';
+      const reason =
+        audioError.name === 'NotAllowedError' ? 'Microphone permission was denied. Check your browser\'s site settings and allow microphone access, then try again.' :
+        audioError.name === 'NotFoundError' ? 'No microphone was found on this device.' :
+        audioError.name === 'NotReadableError' ? 'The microphone is already in use by another app.' :
+        `Recording failed: ${audioError.name || 'unknown error'} — ${audioError.message}`;
+      console.error('[DefenSys] Audio recording failed:', audioError.name, audioError.message);
+      showToast('🎙️', 'Recording unavailable', reason);
+      render();
+      return;
+    }
+  }
+
+  state.recording.stream = stream;
+  state.recording.mode = mode;
+  state.recording.chunks = [];
+  state.recording.startedAt = Date.now();
+
+  let recorderOptions = undefined;
+  if (typeof MediaRecorder.isTypeSupported === 'function') {
+    if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+      recorderOptions = { mimeType: 'video/webm;codecs=vp8,opus', videoBitsPerSecond: 600000 };
+    } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+      recorderOptions = { mimeType: 'video/mp4', videoBitsPerSecond: 600000 };
+    }
+  }
+
+  try {
+    const recorder = recorderOptions ? new MediaRecorder(stream, recorderOptions) : new MediaRecorder(stream);
+    state.recording.mediaRecorder = recorder;
+    recorder.ondataavailable = e => { if(e.data && e.data.size > 0) state.recording.chunks.push(e.data); };
+    recorder.onstop = () => finalizeRecording();
+    recorder.start(1000);
+  } catch(err) {
+    const recorder = new MediaRecorder(stream);
+    state.recording.mediaRecorder = recorder;
+    recorder.ondataavailable = e => { if(e.data && e.data.size > 0) state.recording.chunks.push(e.data); };
+    recorder.onstop = () => finalizeRecording();
+    recorder.start();
+  }
+
+  state.recording.status = 'recording';
+  render();
+  attachLivePreview();
+}
+
+function stopAudioRecording(){
+  const r = state.recording;
+  if(r.mediaRecorder && r.status === 'recording'){
+    try { r.mediaRecorder.stop(); } catch(e){}
+  }
+  if(r.stream){
+    r.stream.getTracks().forEach(t => t.stop());
+  }
+}
+
+function finalizeRecording(){
+  const r = state.recording;
+  const durationSecs = r.startedAt ? Math.round((Date.now() - r.startedAt)/1000) : null;
+  const kind = r.mode === 'audio+video' ? 'video' : 'audio';
+  const blob = new Blob(r.chunks, {type: kind === 'video' ? 'video/webm' : 'audio/webm'});
+  const url = URL.createObjectURL(blob);
+  r.lastClipUrl = url;
+  r.lastClipDuration = durationSecs;
+  r.status = 'saved';
+
+  state.mediaLog.unshift({
+    kind,
+    url,
+    duration: durationSecs,
+    timestamp: nowTime(),
+    date: 'Today'
+  });
+  render();
+
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    r.lastClipBase64 = reader.result;
+    if(state.currentIncidentId && typeof window.attachAudioToIncident === 'function'){
+      window.attachAudioToIncident(state.currentIncidentId, r.lastClipBase64, durationSecs);
+    }
+  };
+  reader.readAsDataURL(blob);
+}
+
+function attachLivePreview(){
+  const el = document.getElementById('livePreviewVideo');
+  const stream = state.recording.stream;
+  if(el && stream){
+    if(el.srcObject !== stream){
+      el.srcObject = stream;
+    }
+    if(el.paused){
+      el.play().catch(e => console.warn('[DefenSys] Live preview video auto-play prevented:', e.message));
+    }
+  }
+}
+
+function callForHelp(){
+  state.activeSteps[3] = true;
+  const callBadge = document.getElementById('emCallBadge');
+  const callMeta = document.getElementById('emCallMeta');
+  if(callBadge) { callBadge.className = 'badge notified'; callBadge.textContent = 'Connected'; }
+  if(callMeta) { callMeta.textContent = 'Connected to responder'; }
+  showToast('📞', 'Calling emergency services', 'Connecting you to the nearest responder now.');
+}
+
+function markSafe(){
+  if(typeof window.stopDefenSysLiveLocation === 'function'){
+    window.stopDefenSysLiveLocation();
+  }
+  stopAudioRecording();
+  if(state.emergency === 'active' && state.emergencyStartedAt){
+    const secs = Math.max(1, Math.round((Date.now() - state.emergencyStartedAt) / 1000));
+    const mm = Math.floor(secs/60).toString().padStart(2,'0');
+    const ss = (secs%60).toString().padStart(2,'0');
+    emergencyHistory.unshift({
+      date:'Today', time: nowTime(), title:'Emergency detected', sub:'Resolved — marked safe by user',
+      details:['📍 Location recorded', `🎙️ Audio evidence • ${mm}:${ss}`, `❤️ Last HR • ${state.vitals.hr} BPM`],
+      audioUrl: state.recording.lastClipUrl
+    });
+  }
+  state.emergency = 'idle';
+  state.emergencyStartedAt = null;
+  state.currentIncidentId = null;
+  state.triggerType = 'SOS';
+  clearTimeout(state.toastTimer);
+  state.toast = null;
+  setRisk('low');
+  render();
+}
+
+function dismissToast(){
+  clearTimeout(state.toastTimer);
+  state.toast = null;
+  render();
+}
+
+function resetAll(){
+  clearInterval(state.graceTimer);
+  clearTimeout(state.toastTimer);
+  if(typeof window.stopDefenSysLiveLocation === 'function'){
+    window.stopDefenSysLiveLocation();
+  }
+  state.watchConnected = true;
+  state.emergency = 'idle';
+  state.emergencyStartedAt = null;
+  state.triggerType = 'SOS';
+  state.toast = null;
+  state.screen = 'home';
+  setRisk('low');
+  nav('home');
+}
+
+function gaugeSvg(level, size, stroke, onColor){
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const info = RISK[level];
+  const offset = c * (1 - info.pct);
+  const trackColor = onColor ? 'rgba(255,255,255,0.28)' : null;
+  const progressColor = onColor ? '#FFFFFF' : info.color;
+  return `
+    <svg width="${size}" height="${size}">
+      <circle class="gauge-track" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}" ${trackColor ? `style="stroke:${trackColor}"` : ''}></circle>
+      <circle class="gauge-progress" cx="${size/2}" cy="${size/2}" r="${r}" stroke-width="${stroke}"
+        stroke="${progressColor}" stroke-dasharray="${c}" stroke-dashoffset="${offset}"></circle>
+    </svg>`;
+}
+
+const RISK_GRADIENT = {
+  low: 'linear-gradient(135deg,#1FBF8F 0%,#12A67A 100%)',
+  moderate: 'linear-gradient(135deg,#FFB648 0%,#FF9A2E 100%)',
+  high: 'linear-gradient(135deg,#FF9466 0%,#FF6B3D 100%)',
+  critical: 'linear-gradient(135deg,#FF6B7A 0%,#FF3B4E 100%)'
+};
+
+function renderRiskCard(){
+  const info = RISK[state.risk];
+  return `
+    <div class="riskcard" style="background:${RISK_GRADIENT[state.risk]}; border:none; box-shadow:0 16px 32px -12px ${info.color}66, 0 4px 12px rgba(16,21,31,0.08);">
+      ${watermark(18)}
+      <div class="gauge-wrap">
+        ${gaugeSvg(state.risk, 104, 9, true)}
+        <div class="gauge-center">
+          <div class="lvl" style="color:#fff;">${info.label}</div>
+          <div class="lbl" style="color:rgba(255,255,255,0.8);">Risk</div>
+        </div>
+      </div>
+      <div class="risk-info">
+        <div class="eyebrow" style="color:rgba(255,255,255,0.75);">Distress risk level</div>
+        <div class="headline" style="color:#fff;">${info.headline}</div>
+        <div class="sub" style="color:rgba(255,255,255,0.85);">${info.sub}</div>
+      </div>
+    </div>`;
+}
+
+function brandHeader(){
+  return `
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 2 L28 7 V15 C28 23 22.5 28.5 16 30 C9.5 28.5 4 23 4 15 V7 Z" fill="url(#logoGrad)"/>
+        <path d="M7 16 H12 L14.5 10 L18 22 L20.5 16 H25" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-word">DefenSys</span>
+    </div>`;
+}
+
+function watermark(size){
+  size = size || 20;
+  return `
+    <svg class="card-watermark" width="${size}" height="${size}" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 2 L28 7 V15 C28 23 22.5 28.5 16 30 C9.5 28.5 4 23 4 15 V7 Z" fill="url(#logoGrad)"/>
+      <path d="M7 16 H12 L14.5 10 L18 22 L20.5 16 H25" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+}
+
+function sparkPoints(history, w, h){
+  const min = Math.min(...history), max = Math.max(...history);
+  const range = Math.max(1, max - min);
+  return history.map((v,i)=>{
+    const x = (i/(history.length-1)) * w;
+    const y = h - ((v-min)/range) * h;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+}
+
+function renderVitalsCard(){
+  const v = state.vitals;
+  const w = state.watchDetail;
+  const hrVal = state.watchConnected ? v.hr : w.lastHr;
+  const pillLabel = state.watchConnected ? 'Live' : 'Last recorded';
+  return `
+    <div class="vitalscard">
+      ${watermark(16)}
+      <div class="vhead">
+        <div class="eyebrow">Continuous monitoring</div>
+        <div class="live-pill" style="${state.watchConnected ? '' : 'color:var(--text-faint);'}"><span class="dot ${state.watchConnected ? 'pulse' : ''}" style="${state.watchConnected ? '' : 'background:var(--text-faint);'}"></span>${pillLabel}</div>
+      </div>
+      <div class="vgrid">
+        <div class="vstat vstat-vivid" style="background:linear-gradient(135deg,#FF7A8A,#FF3B57);">
+          <div class="vic" style="background:rgba(255,255,255,0.25); color:#fff;">❤️</div>
+          <div class="vval" style="color:#fff;">${hrVal}<span style="color:rgba(255,255,255,0.75);">bpm</span></div>
+          <div class="vlbl" style="color:rgba(255,255,255,0.85);">💓 Heart rate</div>
+        </div>
+        <div class="vstat vstat-vivid" style="background:linear-gradient(135deg,#5FA8FF,#1D6FE0);">
+          <div class="vic" style="background:rgba(255,255,255,0.25); color:#fff;">👣</div>
+          <div class="vval" style="color:#fff;">${v.steps.toLocaleString()}<span style="color:rgba(255,255,255,0.75);">steps</span></div>
+          <div class="vlbl" style="color:rgba(255,255,255,0.85);">👣 Today</div>
+        </div>
+        <div class="vstat vstat-vivid" style="background:linear-gradient(135deg,#3DDCC0,#00A88F);">
+          <div class="vic" style="background:rgba(255,255,255,0.25); color:#fff;">🏃</div>
+          <div class="vval" style="font-size:13.5px; color:#fff;">${v.movement}</div>
+          <div class="vlbl" style="color:rgba(255,255,255,0.85);">🏃 Movement</div>
+        </div>
+        <div class="vstat vstat-vivid" style="background:${RISK_GRADIENT[state.risk]};">
+          <div class="vic" style="background:rgba(255,255,255,0.25); color:#fff;">🧭</div>
+          <div class="vval" style="font-size:13.5px; color:#fff;">${RISK[state.risk].label}</div>
+          <div class="vlbl" style="color:rgba(255,255,255,0.85);">🧭 Risk level</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderVitals(){
+  const v = state.vitals;
+  const w = state.watchDetail;
+  const hrVal = state.watchConnected ? v.hr : w.lastHr;
+  const pts = sparkPoints(state.hrHistory, 280, 52);
+  const s = RISK[state.risk];
+  return `
+    ${brandHeader()}
+    <h1 class="title">Vitals</h1>
+    <div class="vbig">
+      ${watermark(18)}
+      <div class="vbig-head">
+        <div>
+          <div class="eyebrow">Heart rate</div>
+          <div class="vbig-num">${hrVal}<span>bpm · ${state.watchConnected ? 'live' : 'last recorded'}</span></div>
+        </div>
+        <div class="pulse-ic">❤️</div>
+      </div>
+      <svg class="spark" viewBox="0 0 280 52" preserveAspectRatio="none">
+        <polyline points="${pts}" fill="none" stroke="var(--crit)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+      </svg>
+    </div>
+    <div class="vbig">
+      ${watermark(18)}
+      <div class="eyebrow">Risk level</div>
+      <div class="vbig-num" style="color:${s.color}; font-size:22px;">${s.label}</div>
+      <div class="stress-row">
+        <div class="stress-bar-track"><div class="stress-bar-fill" style="width:${s.pct*100}%; background:${s.color};"></div></div>
+      </div>
+      <div style="font-size:11px; color:var(--text-dim); margin-top:10px; line-height:1.5;">Derived from heart rate, motion and activity patterns against your normal range.</div>
+    </div>
+    <div class="tiles">
+      <div class="tile"><div class="ic" style="background:var(--blue-dim); color:var(--blue);">👣</div><div class="t">${v.steps.toLocaleString()} steps</div><div class="s">Today</div></div>
+      <div class="tile"><div class="ic" style="background:var(--teal-dim); color:var(--teal);">🏃</div><div class="t">${v.movement}</div><div class="s">Current motion</div></div>
+    </div>
+  `;
+}
+
+function renderWatchCard(){
+  const w = state.watchDetail;
+  const g = state.gesture;
+  const bars = [3,6,9,12].map((h,i)=>`<span style="height:${h}px; background:${state.watchConnected && i < w.signal ? 'var(--low)' : 'var(--border-strong)'};"></span>`).join('');
+  return `
+    <div class="watchcard">
+      ${watermark(16)}
+      <div class="wic" style="background:${state.watchConnected ? 'var(--low-dim)' : 'var(--crit-dim)'}; color:${state.watchConnected ? 'var(--low)' : 'var(--crit)'};">⌚</div>
+      <div>
+        <div class="wtitle">Connected watch</div>
+        <div class="wmeta">
+          <span>${state.watchConnected ? 'Connected · Bluetooth LE' : 'Disconnected'}</span>
+          ${state.watchConnected ? `<span class="sigbars">${bars}</span>` : ''}
+        </div>
+        <div class="wmeta">${state.watchConnected ? `Battery ${w.battery}% · Synced ${w.lastSync}` : 'Last synced ' + w.lastSync}</div>
+        <div class="wmeta">❤️ Last recorded heart rate: ${w.lastHr} bpm${state.watchConnected ? ' · live' : ' · ' + w.lastHrTime}</div>
+        <div class="wmeta">✋ Secret gesture: ${g.trained ? 'Trained' : 'Not set up'}${g.lastTriggered ? ' · last triggered ' + g.lastTriggered : ''}</div>
+      </div>
+      <button class="wtoggle" onclick="toggleWatch()">${state.watchConnected ? 'Disconnect' : 'Reconnect'}</button>
+    </div>`;
+}
+
+function renderProfile(){
+  const p = state.profile;
+  const authUser = (typeof window.getDefenSysAuthUser === 'function') ? window.getDefenSysAuthUser() : null;
+  return `
+    ${brandHeader()}
+    <h1 class="title">Profile</h1>
+    <div class="profile-head">
+      <div class="avatar-lg">${p.initials}</div>
+      <div class="pname">${p.name}</div>
+      <div class="psub">Age ${p.age} · Blood group ${p.blood}</div>
+      <button class="edit-btn">Edit profile</button>
+    </div>
+    <div class="list">
+      <div class="row"><div class="ic">📝</div><div><div class="name">Medical notes</div><div class="meta">${p.note}</div></div></div>
+      <div class="row"><div class="ic">👥</div><div><div class="name">Emergency contacts</div><div class="meta">${p.contacts} added</div></div></div>
+      ${authUser ? `
+      <div class="row"><div class="ic">✅</div><div><div class="name">Account status</div><div class="meta">Signed in as ${authUser.email}</div></div></div>
+      <div class="row" onclick="handleLogout()" style="cursor:pointer;"><div class="ic">🚪</div><div><div class="name">Sign out</div><div class="meta">You'll need to log in again to sync data</div></div></div>
+      ` : `
+      <div class="row" onclick="nav('auth')" style="cursor:pointer;"><div class="ic">🔓</div><div><div class="name">Not signed in</div><div class="meta">Tap to create an account or log in</div></div><span style="margin-left:auto; color:var(--text-faint);">›</span></div>
+      `}
+    </div>
+    ${renderWatchCard()}
+  `;
+}
+
+function handleLogout(){
+  if(typeof window.defenSysLogout === 'function') window.defenSysLogout();
+  state.profile.email = null;
+  nav('profile');
+}
+
+function renderAuth(){
+  const mode = state.authScreen;
+  return `
+    ${brandHeader()}
+    <div class="profile-head" style="padding-top:20px;">
+      <div class="avatar-lg" style="font-size:28px;">🛡️</div>
+      <div class="pname">${mode === 'signup' ? 'Create your account' : 'Welcome back'}</div>
+      <div class="psub">${mode === 'signup' ? 'Set up DefenSys to protect you' : 'Log in to sync your safety data'}</div>
+    </div>
+    ${state.authError ? `<div class="notice-row row"><div class="ic" style="background:var(--card);">⚠️</div><div><div class="name" style="font-size:11.5px;">${state.authError}</div></div></div>` : ''}
+    <div class="list">
+      ${mode === 'signup' ? `<div class="row" style="padding:10px 15px;"><input id="authName" type="text" placeholder="Full name" style="border:none; outline:none; width:100%; font-size:13px; font-family:var(--font-b); background:transparent;"></div>` : ''}
+      <div class="row" style="padding:10px 15px;"><input id="authEmail" type="email" placeholder="Email address" style="border:none; outline:none; width:100%; font-size:13px; font-family:var(--font-b); background:transparent;"></div>
+      <div class="row" style="padding:10px 15px;"><input id="authPassword" type="password" placeholder="Password (min 6 characters)" style="border:none; outline:none; width:100%; font-size:13px; font-family:var(--font-b); background:transparent;"></div>
+    </div>
+    <button class="activate-btn" style="margin-top:4px;" onclick="handleAuthSubmit()" ${state.authBusy ? 'disabled' : ''}>${state.authBusy ? 'Please wait…' : (mode === 'signup' ? 'Create account' : 'Log in')}</button>
+    <div class="row" onclick="toggleAuthMode()" style="cursor:pointer; justify-content:center;">
+      <span style="font-size:12px; color:var(--blue); font-weight:700;">${mode === 'signup' ? 'Already have an account? Log in' : "New here? Create an account"}</span>
+    </div>
+    <div class="row" onclick="skipAuth()" style="cursor:pointer; justify-content:center; color:var(--text-faint);">
+      <span style="font-size:11.5px; font-weight:600;">Continue without an account (demo mode)</span>
+    </div>
+  `;
+}
+
+function toggleAuthMode(){
+  state.authScreen = state.authScreen === 'signup' ? 'login' : 'signup';
+  state.authError = null;
+  render();
+}
+
+function skipAuth(){
+  try{ localStorage.setItem('defensysSkippedAuth', '1'); } catch(e){}
+  state.skippedAuth = true;
+  nav('home');
+}
+
+async function handleAuthSubmit(){
+  const email = document.getElementById('authEmail')?.value?.trim();
+  const password = document.getElementById('authPassword')?.value;
+  const name = document.getElementById('authName')?.value?.trim();
+
+  if(!email || !password){
+    state.authError = 'Please enter both an email and a password.';
+    render();
+    return;
+  }
+  state.authBusy = true;
+  state.authError = null;
+  render();
+
+  const result = state.authScreen === 'signup'
+    ? await window.defenSysSignUp(name, email, password)
+    : await window.defenSysLogin(email, password);
+
+  state.authBusy = false;
+  if(!result.ok){
+    state.authError = result.error || 'Something went wrong. Please try again.';
+    render();
+    return;
+  }
+}
+
+function renderMap(){
+  const loc = (typeof window.getDefenSysLocation === 'function') ? window.getDefenSysLocation() : {lat:null, lon:null};
+  const hasCoords = loc && loc.lat !== null && loc.lon !== null;
+  const mapsKey = window.GOOGLE_MAPS_API_KEY || '';
+  const coordText = hasCoords ? `${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)}` : 'Waiting for GPS fix…';
+  const openInMapsUrl = hasCoords ? `https://www.google.com/maps?q=${loc.lat},${loc.lon}` : '#';
+
+  let mapBody;
+  if(mapsKey && hasCoords){
+    mapBody = `<iframe width="100%" height="280" style="border:0; border-radius:22px;" loading="lazy"
+        src="https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${loc.lat},${loc.lon}&zoom=16"></iframe>`;
+  } else {
+    mapBody = `
+    <div class="mapwrap">
+      ${watermark(20)}
+      <div class="map-road" style="left:0; right:0; top:96px; height:6px;"></div>
+      <div class="map-road" style="left:0; right:0; top:190px; height:6px;"></div>
+      <div class="map-road" style="left:120px; top:0; bottom:0; width:6px;"></div>
+      <div class="map-road" style="left:230px; top:0; bottom:0; width:6px;"></div>
+      <div class="map-pin" style="left:50%; top:58%;"><div class="dot-outer"><div class="dot-inner"></div></div></div>
+      <div class="zone-pin" style="left:26%; top:30%;"><div class="zp">⚠️</div></div>
+      <div class="zone-pin" style="left:78%; top:74%;"><div class="zp">⚠️</div></div>
+    </div>`;
+  }
+
+  return `
+    ${brandHeader()}
+    <h1 class="title">Live location</h1>
+    ${mapBody}
+    ${!mapsKey ? `<div class="notice-row row"><div class="ic" style="background:var(--card);">🗺️</div><div><div class="name" style="font-size:11.5px;">Add a Google Maps API key to see a real embedded map</div><div class="meta">Showing an illustrated placeholder until then — real GPS coordinates below are already live</div></div></div>` : ''}
+    <div class="map-card">
+      ${watermark(16)}
+      <div class="ic" style="background:var(--blue-dim); color:var(--blue);">📍</div>
+      <div>
+        <div class="name">${coordText}</div>
+        <div class="meta">Live location sharing with ${contacts.length} contacts</div>
+      </div>
+    </div>
+    <a href="${openInMapsUrl}" target="_blank" rel="noopener" class="row" style="text-decoration:none; cursor:${hasCoords ? 'pointer' : 'default'}; opacity:${hasCoords ? '1' : '0.5'};">
+      <div class="ic" style="background:var(--teal-dim); color:var(--teal);">🧭</div>
+      <div><div class="name">Open in Google Maps</div><div class="meta">${hasCoords ? 'Uses your real device location' : 'Available once GPS location is ready'}</div></div>
+      <span style="margin-left:auto; color:var(--text-faint);">›</span>
+    </a>
+    <div class="map-card">
+      ${watermark(16)}
+      <div class="ic" style="background:var(--mod-dim); color:var(--mod);">⚠️</div>
+      <div>
+        <div class="name">2 threat zones nearby</div>
+        <div class="meta">Detection sensitivity automatically increased</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLiveTriggerStatus(){
+  const mic = window.__defensysCodeWordStatus || {armed:false, lastError:null, lastHeard:null};
+  const shake = window.__defensysGestureStatus || {armed:false, supported:true, lastError:null};
+
+  function pill(ok, label){
+    const bg = ok ? 'var(--low-dim)' : 'var(--critical-dim, #FFE7E9)';
+    const fg = ok ? 'var(--low)' : 'var(--critical, #FF4757)';
+    return `<span style="display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:999px; background:${bg}; color:${fg}; font-size:11px; font-weight:600;">${ok ? '●' : '○'} ${label}</span>`;
+  }
+
+  let micLabel = 'Mic listener off';
+  if(mic.armed) micLabel = 'Mic listening';
+  else if(mic.lastError === 'insecure-context') micLabel = 'Mic blocked — needs https/localhost';
+  else if(mic.lastError === 'not-allowed' || mic.lastError === 'service-not-allowed') micLabel = 'Mic blocked — permission denied';
+  else if(mic.lastError === 'unsupported-browser') micLabel = 'Mic unsupported in this browser';
+  else if(mic.lastError) micLabel = `Mic error: ${mic.lastError}`;
+  else micLabel = 'Mic not armed yet — tap anywhere';
+
+  let shakeLabel = 'Shake off';
+  if(shake.armed) shakeLabel = 'Shake armed';
+  else if(!shake.supported) shakeLabel = 'Shake unsupported';
+  else if(shake.lastError === 'permission-denied') shakeLabel = 'Shake blocked — permission denied';
+  else if(shake.lastError) shakeLabel = `Shake error: ${shake.lastError}`;
+  else shakeLabel = 'Shake not armed yet — tap anywhere';
+
+  const heardLine = mic.lastHeard
+    ? `<div class="meta" style="margin-top:4px;">Last heard: “${mic.lastHeard}”</div>`
+    : '';
+
+  return `
+    <div class="row" style="cursor:default;">
+      <div class="ic" style="background:var(--surface); color:var(--text-dim);">📡</div>
+      <div style="flex:1;">
+        <div class="name" style="font-size:12px;">Live trigger status</div>
+        <div style="display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;">
+          ${pill(mic.armed, micLabel)}
+          ${pill(shake.armed, shakeLabel)}
+        </div>
+        ${heardLine}
+      </div>
+    </div>`;
+}
+
+function renderHome(){
+  const insecureWarning = window.__defensysInsecureContext__ ? `
+      <div class="row notice-row">
+        <div class="ic" style="background:var(--card);">🔒</div>
+        <div><div class="name" style="font-size:11.5px;">Recording &amp; live triggers are disabled on this page</div><div class="meta">Serve this file via a local server (not double-click) to enable microphone/camera access</div></div>
+      </div>` : '';
+  const statusBlock = `
+      ${insecureWarning}
+      <div class="statuscard">
+        ${watermark(16)}
+        <div class="statusicon" style="background:var(--low-dim); color:var(--low);">🛡️</div>
+        <div>
+          <div class="big">You are safe</div>
+          <div class="sub">Monitoring active · all sensors normal</div>
+        </div>
+      </div>
+      <div class="sos-wrap">
+        <button class="sos-btn" onclick="simulate('sos')">
+          <span style="font-size:23px;">🚨</span>
+          <span>SOS</span>
+        </button>
+        <div class="sos-hint">Hold, use your secret gesture, or say your code word <strong>“AEGIS”</strong> to trigger discreetly</div>
+      </div>
+      <div id="liveTriggerStatus">${renderLiveTriggerStatus()}</div>
+      <div class="tiles">
+        <div class="tile tile-vivid" style="background:linear-gradient(140deg,#5FA8FF,#1D6FE0);" onclick="nav('map')"><div class="ic" style="background:rgba(255,255,255,0.25); color:#fff;">📍</div><div class="t" style="color:#fff;">Live location</div><div class="s" style="color:rgba(255,255,255,0.8);">Sharing with contacts</div></div>
+        <div class="tile tile-vivid" style="background:linear-gradient(140deg,#3DDCC0,#00A88F);" onclick="nav('zones')"><div class="ic" style="background:rgba(255,255,255,0.25); color:#fff;">🛡️</div><div class="t" style="color:#fff;">Threat zones</div><div class="s" style="color:rgba(255,255,255,0.8);">${zones.length} active zones</div></div>
+        <div class="tile tile-vivid" style="background:linear-gradient(140deg,#FFC169,#FF9A2E);" onclick="nav('contacts')"><div class="ic" style="background:rgba(255,255,255,0.25); color:#fff;">👥</div><div class="t" style="color:#fff;">Emergency contacts</div><div class="s" style="color:rgba(255,255,255,0.85);">${contacts.length} added</div></div>
+        <div class="tile tile-vivid" style="background:linear-gradient(140deg,#B79CFF,#8B6DFF);" onclick="triggerCodeWordManually()"><div class="ic" style="background:rgba(255,255,255,0.25); color:#fff;">🎙️</div><div class="t" style="color:#fff;">Code word</div><div class="s" style="color:rgba(255,255,255,0.85);">Tap to test “AEGIS”</div></div>
+      </div>
+      <div class="row" onclick="nav('history')" style="cursor:pointer;">
+        <div class="ic" style="background:var(--surface); color:var(--text-dim);">📁</div>
+        <div><div class="name">Emergency history</div><div class="meta">${emergencyHistory.length} past events · evidence saved</div></div>
+        <span style="margin-left:auto; color:var(--text-faint);">›</span>
+      </div>
+      <div class="row" onclick="nav('evidence')" style="cursor:pointer;">
+        <div class="ic" style="background:var(--surface); color:var(--text-dim);">🗂️</div>
+        <div><div class="name">Evidence vault</div><div class="meta">${state.mediaLog.length} recording${state.mediaLog.length === 1 ? '' : 's'} · ${state.gestureLog.length} gesture event${state.gestureLog.length === 1 ? '' : 's'}</div></div>
+        <span style="margin-left:auto; color:var(--text-faint);">›</span>
+      </div>`;
+
+  let toastHtml = '';
+  if(state.toast){
+    toastHtml = `<div class="toast"><span class="warn" style="font-size:16px; flex-shrink:0; margin-top:1px;">${state.toast.icon}</span><div style="flex:1;"><strong>${state.toast.title}</strong>${state.toast.body}<div class="toast-actions"><button class="toast-dismiss" onclick="dismissToast()">Dismiss</button><span class="toast-auto">Auto-dismisses in 1 min</span></div></div><button class="toast-x" onclick="dismissToast()">✕</button></div>`;
+  }
+
+  return `
+    ${brandHeader()}
+    <h1 class="title">Home</h1>
+    ${renderRiskCard()}
+    ${renderVitalsCard()}
+    ${renderWatchCard()}
+    ${statusBlock}
+    ${toastHtml}
+  `;
+}
+
+function renderSOS(){
+  if(state.emergency === 'grace'){
+    const circumference = 2*Math.PI*98;
+    const offset = circumference * (state.graceLeft/5);
+    return `
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:22px; padding-top:20px;">
+        <div class="ring-outer" style="width:212px; height:212px;">
+          <svg width="212" height="212">
+            <circle class="cd-track" cx="106" cy="106" r="98"></circle>
+            <circle class="cd-progress" cx="106" cy="106" r="98"
+              stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"></circle>
+          </svg>
+          <button class="sos-btn" onclick="cancelGrace()" style="width:164px; height:164px; background:#fff; color:var(--text); border:1px solid var(--border-strong); box-shadow:var(--shadow-lg);">
+            <span style="font-size:40px; font-family:'Manrope'; font-weight:800;">${state.graceLeft}</span>
+            <span style="font-size:10.5px; font-weight:600; color:var(--text-dim);">tap to dismiss</span>
+          </button>
+        </div>
+        <div class="grace-title" style="font-size:20px;">Activating emergency mode</div>
+        <div class="grace-sub" style="max-width:240px;">Alerts will be sent to your emergency contacts when the countdown ends</div>
+      </div>
+    `;
+  }
+
+  return `
+    ${brandHeader()}
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:24px; padding:12px 0 20px;">
+      <div style="text-align:center;">
+        <div class="em-title" style="color:var(--text); font-size:20px;">Emergency SOS</div>
+        <div class="em-sub" style="max-width:250px; margin-top:6px;">Press and hold the button below to alert your emergency contacts and nearby authorities</div>
+      </div>
+      <button class="sos-btn" style="width:180px; height:180px; font-size:16px;" onclick="simulate('sos')">
+        <span style="font-size:32px;">🚨</span>
+        <span>Hold for SOS</span>
+      </button>
+      <div class="sos-hint" style="max-width:260px;">A 5-second countdown gives you time to cancel before anyone is alerted</div>
+    </div>
+    <div class="list">
+      <div class="row" onclick="triggerCodeWordManually()" style="cursor:pointer;">
+        <div class="ic" style="background:var(--crit-dim); color:var(--crit);">🎙️</div>
+        <div><div class="name">Test code word</div><div class="meta">Say or simulate “AEGIS”</div></div>
+        <span style="margin-left:auto; color:var(--text-faint);">›</span>
+      </div>
+      <div class="row" onclick="simulate('gesture')" style="cursor:pointer;">
+        <div class="ic" style="background:var(--blue-dim); color:var(--blue);">✋</div>
+        <div><div class="name">Test secret gesture</div><div class="meta">Simulate 3 rapid shakes</div></div>
+        <span style="margin-left:auto; color:var(--text-faint);">›</span>
+      </div>
+    </div>
+    <button class="safe-btn" onclick="nav('home')">Back to Home</button>
+  `;
+}
+
+function renderEmergency(){
+  const w = state.watchDetail;
+  const labels = [
+    {text:'Sharing live location'},
+    {text:`Alerting ${contacts.length} emergency contacts`},
+    {text:'Microphone permission requested'},
+    {text:'Connecting to nearest police station'}
+  ];
+  const steps = labels.map((l,i)=>`
+    <div class="step ${state.activeSteps[i] ? 'done':''}">
+      <div class="chk">${state.activeSteps[i] ? '✅' : ''}</div>
+      <div class="label">${l.text}</div>
+    </div>`).join('');
+  const callConnected = state.activeSteps[3];
+
+  return `
+    <div class="em-header">
+      <div class="em-ring"><div class="core">🚨</div></div>
+      <div class="em-title">🚨 EMERGENCY ACTIVE</div>
+      <div class="em-sub">Emergency detected at ${state.emergencyStartedLabel || nowTime()}</div>
+    </div>
+
+    <div class="list">
+      <div class="row">
+        <div class="ic" style="background:var(--blue-dim); color:var(--blue);">📍</div>
+        <div><div class="name">Location</div><div class="meta">Shared with ${contacts.length} emergency contacts</div></div>
+      </div>
+      <div class="row">
+        <div class="ic" style="background:var(--crit-dim); color:var(--crit);">${state.recording.mode === 'audio+video' ? '🎥' : '🎙️'}</div>
+        <div><div class="name">${state.recording.mode === 'audio+video' ? 'Audio + video recording' : 'Audio recording'}</div><div class="meta">${
+          state.recording.status === 'recording' ? 'Live · saved as evidence for authorities' :
+          state.recording.status === 'requesting' ? 'Waiting for camera/microphone permission…' :
+          state.recording.status === 'denied' ? 'Permission denied' :
+          state.recording.status === 'saved' ? 'Saved' : 'Starting…'
+        }</div></div>
+        <span class="badge ${state.recording.status === 'recording' ? 'live' : state.recording.status === 'denied' ? 'pending' : 'connecting'}">${
+          state.recording.status === 'recording' ? 'Recording' :
+          state.recording.status === 'denied' ? 'Unavailable' :
+          state.recording.status === 'saved' ? 'Saved' : 'Connecting'
+        }</span>
+      </div>
+      ${state.recording.status === 'recording' && state.recording.mode === 'audio+video' ? `
+      <div class="row" style="padding:8px;">
+        <video id="livePreviewVideo" autoplay muted playsinline style="width:100%; border-radius:12px; background:#000; max-height:160px; object-fit:cover;"></video>
+      </div>` : ''}
+      <div class="row">
+        <div class="ic" style="background:${state.watchConnected ? 'var(--low-dim)' : 'var(--crit-dim)'}; color:${state.watchConnected ? 'var(--low)' : 'var(--crit)'};">⌚</div>
+        <div><div class="name">Watch status</div><div class="meta">${state.watchConnected ? 'Connected · streaming vitals' : 'Disconnected · last HR ' + w.lastHr + ' bpm'}</div></div>
+        <span class="badge ${state.watchConnected ? 'notified' : 'pending'}">${state.watchConnected ? 'Connected' : 'Disconnected'}</span>
+      </div>
+      <div class="row">
+        <div class="ic" style="background:var(--mod-dim); color:var(--mod);">📞</div>
+        <div><div class="name">Emergency call</div><div class="meta" id="emCallMeta">${callConnected ? 'Connected to responder' : 'Connecting...'}</div></div>
+        <span class="badge ${callConnected ? 'notified' : 'connecting'}" id="emCallBadge">${callConnected ? 'Connected' : 'Connecting'}</span>
+      </div>
+    </div>
+
+    ${!state.watchConnected ? `
+    <div class="row notice-row">
+      <div class="ic" style="background:var(--card);">⚠️</div>
+      <div><div class="name" style="font-size:11.5px;">Auto-triggered from last known state</div><div class="meta">Watch disconnected after an abnormal heart-rate reading</div></div>
+    </div>` : ''}
+    <div class="row notice-row">
+      <div class="ic" style="background:var(--card);">🛰️</div>
+      <div><div class="name" style="font-size:11.5px;">Emergency mode continues even if the watch disconnects</div><div class="meta">Phone sensors and cached data take over automatically</div></div>
+    </div>
+
+    <div class="eyebrow">Alert delivery</div>
+    <div class="steps">${steps}</div>
+
+    <div class="eyebrow">Communication channels</div>
+    <div class="list">
+      <div class="row"><div class="ic">🌐</div><div><div class="name">Internet</div><div class="meta">Attempted first</div></div><span class="badge notified">Sent</span></div>
+      <div class="row"><div class="ic">💬</div><div><div class="name">SMS fallback</div><div class="meta">Used when data is unavailable</div></div><span class="badge notified">Sent</span></div>
+      <div class="row"><div class="ic">📦</div><div><div class="name">Location cache</div><div class="meta">Stored on-device for offline recovery</div></div><span class="badge notified">Cached</span></div>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="safe-btn" style="flex:1; margin-top:0;" onclick="markSafe()">Cancel</button>
+      <button class="activate-btn" style="flex:1; margin-top:0;" onclick="callForHelp()">📞 Call for help</button>
+    </div>
+  `;
+}
+
+function renderWatchLost(){
+  const w = state.watchDetail;
+  return `
+    ${brandHeader()}
+    <div class="em-header">
+      <div class="em-ring" style="background:var(--mod-dim);"><div class="core" style="background:linear-gradient(155deg,#FFC773,#FFA531); animation:none;">⌚</div></div>
+      <div class="em-title" style="color:var(--mod);">WATCH DISCONNECTED</div>
+      <div class="em-sub">Last known state as of ${w.lastHrTime === 'Just now' ? 'moments before disconnect' : w.lastHrTime}</div>
+    </div>
+    <div class="list">
+      <div class="row">
+        <div class="ic" style="background:var(--crit-dim); color:var(--crit);">❤️</div>
+        <div><div class="name">Heart rate</div><div class="meta">Last known · ${w.lastHr} bpm</div></div>
+      </div>
+      <div class="row">
+        <div class="ic" style="background:var(--blue-dim); color:var(--blue);">📍</div>
+        <div><div class="name">Location</div><div class="meta">Last updated 2 min ago</div></div>
+      </div>
+      <div class="row">
+        <div class="ic" style="background:var(--low-dim); color:var(--low);">🚨</div>
+        <div><div class="name">Emergency</div><div class="meta">Not active</div></div>
+        <span class="badge notified">Safe</span>
+      </div>
+    </div>
+    <div class="row notice-row">
+      <div class="ic" style="background:var(--card);">✓</div>
+      <div><div class="name" style="font-size:11.5px;">No emergency detected</div><div class="meta">Phone monitoring continues using motion and location</div></div>
+    </div>
+    <button class="activate-btn" onclick="simulate('sos')"><span>🚨</span><span>Activate SOS</span></button>
+  `;
+}
+
+function renderZones(){
+  return `
+    ${brandHeader()}
+    <h1 class="title">Threat zones</h1>
+    <p style="font-size:12px; color:var(--text-dim); line-height:1.5;">Areas where detection sensitivity is automatically increased.</p>
+    <div class="list">
+      ${zones.map(z=>`
+        <div class="row">
+          <div class="ic">${z.dot}</div>
+          <div><div class="name">${z.name}</div><div class="meta">Extra sensitivity: ${z.level}</div></div>
+        </div>`).join('')}
+      <div class="row" style="justify-content:center; color:var(--text-faint); cursor:pointer;">
+        <span style="font-size:15px;">➕</span><span style="font-size:12.5px; font-weight:600;">Add a threat zone</span>
+      </div>
+    </div>
+    <div class="row notice-row">
+      <div class="ic" style="background:var(--card);">🛡️</div>
+      <div><div class="name" style="font-size:11.5px;">Enhanced monitoring active inside these zones</div><div class="meta">Detection thresholds automatically lower in these areas</div></div>
+    </div>
+    <div class="row" onclick="nav('map')" style="cursor:pointer; justify-content:center;">
+      <span style="font-size:15px;">🗺️</span><span style="font-size:12.5px; font-weight:700; color:var(--blue);">View on map</span>
+    </div>
+  `;
+}
+
+function renderEvidence(){
+  const clips = state.mediaLog;
+  const gestures = state.gestureLog;
+  return `
+    ${brandHeader()}
+    <h1 class="title">Evidence vault</h1>
+    <p style="font-size:12px; color:var(--text-dim); line-height:1.5;">Recordings and activity captured automatically during emergencies — kept securely as evidence.</p>
+
+    <div class="eyebrow">Recordings (${clips.length})</div>
+    ${clips.length === 0 ? `<div class="row"><div class="ic">🗂️</div><div><div class="name">No recordings yet</div><div class="meta">Evidence is captured automatically when an emergency is triggered</div></div></div>` : `
+    <div class="list">
+      ${clips.map(c => `
+        <div class="row" style="align-items:flex-start; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; gap:12px; width:100%;">
+            <div class="ic" style="background:var(--crit-dim); color:var(--crit);">${c.kind === 'video' ? '🎥' : '🎙️'}</div>
+            <div><div class="name">${c.kind === 'video' ? 'Video + audio' : 'Audio'} recording</div><div class="meta">${c.date} • ${c.timestamp} · ${c.duration != null ? c.duration + 's' : 'Captured'}</div></div>
+          </div>
+          <div style="width:100%;">
+            ${c.kind === 'video'
+              ? `<video controls preload="metadata" playsinline src="${c.url}" style="width:100%; border-radius:10px; max-height:180px; background:#000;"></video>`
+              : `<audio controls preload="metadata" src="${c.url}" style="width:100%; height:32px;"></audio>`}
+          </div>
+        </div>`).join('')}
+    </div>`}
+
+    <div class="eyebrow">Gesture activity (${gestures.length})</div>
+    <div class="row"><div class="ic">✋</div><div><div class="name">${state.gesture.trained ? 'Gesture trained' : 'Not trained yet'}</div><div class="meta">${state.gesture.samples} sample${state.gesture.samples === 1 ? '' : 's'} recorded during setup</div></div></div>
+    ${gestures.length === 0 ? `<div class="row"><div class="ic">🕒</div><div><div class="name">No triggers yet</div><div class="meta">Shake device or trigger code word to see activity logged here</div></div></div>` : `
+    <div class="list">
+      ${gestures.map(g => `
+        <div class="row"><div class="ic">✋</div><div><div class="name">Gesture detected</div><div class="meta">${g.date} • ${g.time}</div></div></div>`).join('')}
+    </div>`}
+  `;
+}
+
+function renderHistory(){
+  return `
+    ${brandHeader()}
+    <h1 class="title">Emergency history</h1>
+    <p style="font-size:12px; color:var(--text-dim); line-height:1.5;">A record of past alerts, kept as evidence for you and your contacts.</p>
+    <div class="list">
+      ${emergencyHistory.map(h=>`
+        <div class="row" style="align-items:flex-start; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; gap:12px; width:100%;">
+            <div class="ic" style="background:${h.details.length ? 'var(--crit-dim)' : 'var(--surface)'}; color:${h.details.length ? 'var(--crit)' : 'var(--text-faint)'};">${h.details.length ? '🚨' : 'ℹ️'}</div>
+            <div><div class="name">${h.date} • ${h.time}</div><div class="meta">${h.title}</div></div>
+          </div>
+          ${h.sub ? `<div style="font-size:10.5px; color:var(--text-dim); padding-left:48px;">${h.sub}</div>` : ''}
+          ${h.details.length ? `<div style="display:flex; flex-direction:column; gap:3px; padding-left:48px;">${h.details.map(d=>`<div style="font-size:10.5px; color:var(--text-dim);">${d}</div>`).join('')}</div>` : ''}
+          ${h.audioUrl ? `<div style="padding-left:48px; width:calc(100% - 48px);"><audio controls preload="metadata" src="${h.audioUrl}" style="width:100%; height:32px;"></audio></div>` : ''}
+        </div>`).join('')}
+    </div>
+  `;
+}
+
+function renderContacts(){
+  const notified = state.emergency === 'active';
+  const hasPlaceholders = contacts.some(c => String(c.phone||'').includes('X'));
+  return `
+    ${brandHeader()}
+    <h1 class="title">Emergency contacts</h1>
+    ${hasPlaceholders ? `<div class="notice-row row"><div class="ic" style="background:var(--card);">📵</div><div><div class="name" style="font-size:11.5px;">Placeholder phone numbers detected</div><div class="meta">Real SMS/calls won't send until you replace them with verified numbers</div></div></div>` : ''}
+    <div class="list">
+      ${contacts.map(c=>`
+        <div class="row">
+          <div class="ic">${c.icon}</div>
+          <div><div class="name">${c.name}</div><div class="meta">${c.rel} · ${c.phone}</div></div>
+          <span class="badge ${notified ? 'notified':'pending'}">${notified ? 'Notified' : 'Standby'}</span>
+        </div>`).join('')}
+    </div>
+  `;
+}
+
+function renderSettings(){
+  return `
+    ${brandHeader()}
+    <h1 class="title">Settings & Triggers</h1>
+    <div class="list">
+      <div class="row" onclick="simulate('gesture')" style="cursor:pointer;">
+        <div class="ic" style="background:var(--blue-dim); color:var(--blue);">✋</div>
+        <div><div class="name">Secret gesture</div><div class="meta">3 rapid shakes · Tap to test</div></div>
+        <span class="badge notified">Active</span>
+      </div>
+      <div class="row" onclick="triggerCodeWordManually()" style="cursor:pointer;">
+        <div class="ic" style="background:var(--crit-dim); color:var(--crit);">🎙️</div>
+        <div><div class="name">Code word (“AEGIS”)</div><div class="meta">Say “AEGIS” or tap to test voice trigger</div></div>
+        <span class="badge live">Mic Listening</span>
+      </div>
+      <div class="row"><div class="ic">❤️</div><div><div class="name">Heart rate baseline</div><div class="meta">Calibrated</div></div></div>
+    </div>
+    ${renderWatchCard()}
+    <div class="eyebrow">Communication status</div>
+    <div class="list">
+      <div class="row"><div class="ic" style="background:var(--low-dim); color:var(--low);">🟢</div><div><div class="name">Internet</div><div class="meta">Primary channel</div></div><span class="badge notified">Active</span></div>
+      <div class="row"><div class="ic">⚪</div><div><div class="name">SMS</div><div class="meta">Fallback when data is unavailable</div></div><span class="badge pending">Standby</span></div>
+      <div class="row"><div class="ic">⚪</div><div><div class="name">Bluetooth relay</div><div class="meta">Nearby devices can relay alerts</div></div><span class="badge pending">Available</span></div>
+    </div>
+  `;
+}
+
+function render(){
+  const wp = document.getElementById('watchpill');
+  if(wp){
+    wp.className = 'watchpill ' + (state.watchConnected ? 'connected':'disconnected');
+  }
+  const wt = document.getElementById('wtext');
+  if(wt){
+    wt.textContent = state.watchConnected ? 'Watch connected' : 'Watch disconnected';
+  }
+
+  const el = document.getElementById('screen');
+  if(!el) return;
+
+  if(state.emergency === 'active'){
+    const existingVideo = document.getElementById('livePreviewVideo');
+    if(!existingVideo || state.recording.status !== 'recording'){
+      el.innerHTML = renderEmergency();
+    }
+    attachLivePreview();
+    return;
+  }
+  if(state.emergency === 'grace'){
+    el.innerHTML = renderSOS();
+    return;
+  }
+  if(state.screen === 'home' && !state.watchConnected){
+    el.innerHTML = renderWatchLost();
+    return;
+  }
+  if(state.screen === 'home') el.innerHTML = renderHome();
+  else if(state.screen === 'sos') el.innerHTML = renderSOS();
+  else if(state.screen === 'vitals') el.innerHTML = renderVitals();
+  else if(state.screen === 'zones') el.innerHTML = renderZones();
+  else if(state.screen === 'contacts') el.innerHTML = renderContacts();
+  else if(state.screen === 'settings') el.innerHTML = renderSettings();
+  else if(state.screen === 'profile') el.innerHTML = renderProfile();
+  else if(state.screen === 'map') el.innerHTML = renderMap();
+  else if(state.screen === 'history') el.innerHTML = renderHistory();
+  else if(state.screen === 'evidence') el.innerHTML = renderEvidence();
+  else if(state.screen === 'auth') el.innerHTML = renderAuth();
+
+  attachLivePreview();
+}
+
+window.__defensysAuthReady__ = function(user){
+  if(user){
+    state.profile.name = user.displayName || state.profile.name;
+    state.profile.email = user.email;
+    state.authError = null;
+    if(state.screen === 'auth') state.screen = 'home';
+  } else if(!state.skippedAuth && state.screen !== 'auth'){
+    state.screen = 'auth';
+  }
+  render();
+};
+
+render();
+window.__defensysRerender__ = render;
+setInterval(tickVitals, 2000);
+
+// Lightweight poll (independent of the main render() cycle) so the live
+// trigger status badge reflects mic/shake state within ~1s, on-screen,
+// without needing DevTools plugged into the phone.
+setInterval(() => {
+  if (state.screen !== 'home') return;
+  const el = document.getElementById('liveTriggerStatus');
+  if (el) el.innerHTML = renderLiveTriggerStatus();
+}, 1000);
+</script>
+</body>
+</html>
