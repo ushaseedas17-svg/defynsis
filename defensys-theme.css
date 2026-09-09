@@ -1,0 +1,840 @@
+/* DefenSys — Soft Blush / Elegant Safety Theme
+   External theme for defensys-elegant.html
+*/
+
+/* ---------- Core palette ---------- */
+:root {
+  --bg: #fff7fa;
+  --surface: #fff0f5;
+  --card: rgba(255, 255, 255, 0.92);
+  --border: rgba(150, 48, 91, 0.12);
+  --border-strong: rgba(150, 48, 91, 0.22);
+  --track: #f7e6ed;
+
+  --text: #4a1830;
+  --text-dim: #8c6878;
+  --text-faint: #b79aa8;
+
+  --blue: #c85b86;
+  --blue-dim: #ffe8f0;
+
+  --teal: #38ae99;
+  --teal-dim: #e5f7f2;
+
+  --low: #328f76;
+  --low-dim: #e3f3ed;
+
+  --mod: #d68a58;
+  --mod-dim: #fff0e6;
+
+  --high: #dd766c;
+  --high-dim: #ffebe8;
+
+  --crit: #d84f68;
+  --crit-dim: #ffe7ed;
+
+  --shadow-sm: 0 8px 22px rgba(104, 42, 67, 0.07);
+  --shadow-md: 0 16px 34px rgba(104, 42, 67, 0.11);
+  --shadow-lg: 0 28px 60px rgba(91, 31, 57, 0.17);
+
+  --font-d: 'Bodoni Moda', Didot, 'Times New Roman', serif;
+  --font-b: 'Josefin Sans', 'Inter', Arial, sans-serif;
+}
+
+/* ---------- Page / phone ---------- */
+body {
+  background:
+    radial-gradient(circle at 10% 4%, rgba(255, 191, 214, 0.58), transparent 30%),
+    radial-gradient(circle at 90% 86%, rgba(244, 184, 207, 0.42), transparent 32%),
+    linear-gradient(135deg, #fffafd 0%, #fdebf3 50%, #fff5f9 100%);
+}
+
+body::before {
+  opacity: 0.25;
+  background-image:
+    linear-gradient(rgba(183, 89, 133, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(183, 89, 133, 0.06) 1px, transparent 1px);
+}
+
+.phone {
+  border-color: #321421;
+  background: #fff8fb;
+  box-shadow:
+    0 34px 86px rgba(105, 39, 66, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.78);
+}
+
+.screen {
+  background:
+    radial-gradient(430px 280px at 5% -8%, rgba(255, 188, 213, 0.30), transparent 60%),
+    radial-gradient(340px 270px at 100% 100%, rgba(235, 173, 201, 0.18), transparent 60%),
+    linear-gradient(160deg, #fffefe 0%, #fff3f7 100%);
+}
+
+/* ---------- Typography ---------- */
+h1.title,
+.hero-name,
+.risk-info .headline,
+.gauge-center .lvl,
+.vstat .vval,
+.vbig-num,
+.profile-head .pname,
+.em-title,
+.grace-title {
+  font-family: var(--font-d);
+  letter-spacing: -0.035em;
+}
+
+.eyebrow,
+.navitem,
+.watchpill,
+.badge,
+.tile .t,
+.row .name,
+.watchcard .wtitle,
+.activate-btn,
+.safe-btn,
+.wtoggle {
+  letter-spacing: 0.045em;
+}
+
+.hero-greeting,
+.hero-status-sub,
+.risk-info .sub,
+.statuscard .sub,
+.row .meta,
+.tile .s,
+.watchcard .wmeta {
+  letter-spacing: 0.015em;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  background:
+    linear-gradient(135deg, #d95d88 0%, #e987aa 52%, #f4b0c9 100%);
+  box-shadow: 0 20px 38px -14px rgba(183, 66, 112, 0.40);
+}
+
+.hero::after {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.hero-shield {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+/* ---------- Cards ---------- */
+.riskcard,
+.statuscard,
+.vitalscard,
+.vbig,
+.watchcard,
+.row,
+.tile {
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.riskcard {
+  border-radius: 22px;
+}
+
+.statuscard,
+.vitalscard,
+.vbig,
+.watchcard {
+  border-radius: 19px;
+}
+
+.row {
+  border-radius: 16px;
+}
+
+.tile {
+  border-radius: 18px;
+}
+
+.riskcard::before,
+.vbig::before {
+  border-color: rgba(200, 91, 134, 0.08);
+}
+
+.tile:hover,
+.row:hover {
+  border-color: rgba(200, 91, 134, 0.30);
+  box-shadow: 0 14px 28px rgba(104, 42, 67, 0.10);
+}
+
+/* ---------- Vitals: soft pink / lavender / mint / sage ---------- */
+.vgrid .vstat:nth-child(1) {
+  background: linear-gradient(135deg, #ffc1d1, #ff9fb8) !important;
+  color: #54172f;
+  box-shadow: 0 14px 26px -15px rgba(214, 78, 111, 0.35) !important;
+}
+
+.vgrid .vstat:nth-child(2) {
+  background: linear-gradient(135deg, #d9c2f5, #c3a5e9) !important;
+  color: #4a286d;
+  box-shadow: 0 14px 26px -15px rgba(117, 83, 160, 0.25) !important;
+}
+
+.vgrid .vstat:nth-child(3) {
+  background: linear-gradient(135deg, #b9e6d7, #8fd2bd) !important;
+  color: #195c4b;
+  box-shadow: 0 14px 26px -15px rgba(49, 142, 116, 0.25) !important;
+}
+
+.vgrid .vstat:nth-child(4) {
+  background: linear-gradient(135deg, #cfe4d3, #afd0b8) !important;
+  color: #245442;
+  box-shadow: 0 14px 26px -15px rgba(55, 117, 91, 0.22) !important;
+}
+
+.vstat {
+  border-color: rgba(119, 61, 87, 0.08);
+}
+
+.vstat .vval span,
+.vstat .vlbl {
+  color: rgba(74, 24, 48, 0.78);
+}
+
+/* ---------- Home action tiles ---------- */
+.tiles .tile:nth-child(1) {
+  background: linear-gradient(140deg, #f4c1d2, #e99db8) !important;
+  color: #88284f;
+  box-shadow: 0 14px 26px -15px rgba(185, 71, 111, 0.28) !important;
+}
+
+.tiles .tile:nth-child(2) {
+  background: linear-gradient(140deg, #d8c2f1, #bea4e3) !important;
+  color: #482866;
+  box-shadow: 0 14px 26px -15px rgba(111, 79, 150, 0.25) !important;
+}
+
+.tiles .tile:nth-child(3) {
+  background: linear-gradient(140deg, #f6d2bd, #edb69d) !important;
+  color: #743e2c;
+  box-shadow: 0 14px 26px -15px rgba(184, 101, 70, 0.23) !important;
+}
+
+.tiles .tile:nth-child(4) {
+  background: linear-gradient(140deg, #c8e8dc, #a6d3c2) !important;
+  color: #1d5948;
+  box-shadow: 0 14px 26px -15px rgba(46, 121, 98, 0.23) !important;
+}
+
+/* Keep tile icon bubbles gentle */
+.tile .ic {
+  background: rgba(255, 255, 255, 0.48);
+  border-color: rgba(110, 42, 70, 0.08);
+}
+
+/* ---------- Live location / map ---------- */
+.mapwrap {
+  border: 2px solid rgba(200, 91, 134, 0.18);
+  box-shadow: 0 17px 30px -17px rgba(151, 60, 95, 0.30);
+  background:
+    linear-gradient(#725d63, #fff4f7),
+    repeating-linear-gradient(0deg, transparent, transparent 38px, #efdce5 38px, #efdce5 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 54px, #efdce5 54px, #efdce5 56px);
+}
+
+.map-road {
+  background: #ead6df;
+}
+
+.map-pin .dot-outer {
+  background: rgba(216, 79, 104, 0.16);
+}
+
+.map-pin .dot-inner {
+  background: var(--crit);
+  box-shadow: 0 2px 7px rgba(126, 35, 60, 0.22);
+}
+
+.zone-pin .zp {
+  background: var(--teal);
+}
+
+.map-card {
+  background: linear-gradient(135deg, #fff8fb, #fcebf2);
+  border-color: rgba(200, 91, 134, 0.16);
+  box-shadow: 0 13px 26px -17px rgba(142, 54, 91, 0.30);
+}
+
+.map-card > .ic {
+  background: #ffd2e1 !important;
+  color: #9f315e !important;
+  border-color: rgba(197, 78, 125, 0.12);
+}
+
+/* ---------- Watch / connection ---------- */
+.watchpill {
+  background: rgba(255, 255, 255, 0.76);
+  border-color: rgba(112, 49, 78, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.watchpill.connected {
+  color: var(--low);
+}
+
+.watchpill.disconnected {
+  color: var(--crit);
+}
+
+.live-pill {
+  color: var(--low);
+}
+
+.live-pill .dot {
+  background: #43ad91;
+  box-shadow: 0 0 0 4px rgba(67, 173, 145, 0.12);
+}
+
+.sigbars span {
+  background: var(--low);
+}
+
+/* ---------- Navigation ---------- */
+.navbar {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(112, 49, 78, 0.12);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 30px -12px rgba(72, 27, 49, 0.18);
+}
+
+.navitem.active {
+  color: #c75b88;
+  background: #ffe0eb;
+}
+
+/* ---------- SOS / Emergency ---------- */
+.sos-btn {
+  background: linear-gradient(145deg, #f58c91 0%, #df5c70 62%, #c94b63 100%);
+  box-shadow: 0 17px 30px -9px rgba(207, 72, 96, 0.42);
+}
+
+.activate-btn {
+  background: linear-gradient(135deg, #df5c70, #cb4961);
+  border: none;
+  box-shadow: 0 10px 20px -11px rgba(207, 72, 96, 0.48);
+}
+
+.safe-btn {
+  background: rgba(255, 255, 255, 0.74);
+  border-color: rgba(112, 49, 78, 0.16);
+}
+
+.em-ring {
+  background: #ffe7ed;
+}
+
+.em-ring .core {
+  background: linear-gradient(155deg, #f58c91, #d9536a);
+}
+
+.step {
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.90);
+}
+
+.step.done .chk {
+  background: var(--low);
+  border-color: var(--low);
+}
+
+/* ---------- Profile / avatar ---------- */
+.avatar-btn,
+.avatar-lg {
+  background: linear-gradient(145deg, #ef9cbb, #c75b88);
+  box-shadow: 0 8px 18px -8px rgba(199, 91, 136, 0.40);
+}
+
+/* ---------- Badges / alerts ---------- */
+.badge.notified {
+  background: #e3f5ee;
+  color: #328f76;
+}
+
+.badge.live {
+  background: #ffe5eb;
+  color: #cf4e68;
+}
+
+.badge.pending {
+  background: #f7edf2;
+  color: #a88b99;
+}
+
+.badge.connecting {
+  background: #fff0e3;
+  color: #c17b4c;
+}
+
+.notice-row {
+  background: #fff4f7 !important;
+}
+
+.toast {
+  border-color: rgba(112, 49, 78, 0.12);
+  box-shadow: 0 18px 42px rgba(75, 28, 49, 0.16);
+}
+
+/* ---------- Interaction ---------- */
+.tile,
+.row,
+.sos-btn,
+.wtoggle,
+.activate-btn,
+.safe-btn {
+  transition: transform .12s ease, box-shadow .12s ease, border-color .15s ease;
+}
+
+.tile:active,
+.row:active {
+  transform: scale(0.985);
+}
+
+.sos-btn:active {
+  transform: scale(0.96);
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 440px) {
+  body {
+    background: #fff7fa;
+  }
+}
+
+
+/* ---------- Final readability override ---------- */
+.riskcard,
+.statuscard,
+.vitalscard,
+.vbig,
+.watchcard,
+.row,
+.tile {
+  color: #4a1830;
+}
+
+.riskcard .headline,
+.statuscard .big,
+.vbig-num,
+.watchcard .wtitle,
+.row .name,
+.tile .t,
+.profile-head .pname,
+.grace-title {
+  color: #4a1830;
+}
+
+.riskcard .sub,
+.statuscard .sub,
+.row .meta,
+.tile .s,
+.watchcard .wmeta,
+.profile-head .psub,
+.grace-sub {
+  color: #765363;
+}
+
+.vgrid .vstat .vval,
+.vgrid .vstat .vlbl,
+.tiles .tile .t,
+.tiles .tile .s {
+  color: inherit;
+}
+
+.vgrid .vstat .vval {
+  color: #42172c;
+}
+
+.vgrid .vstat .vlbl {
+  color: rgba(66, 23, 44, 0.78);
+}
+
+.tiles .tile .t {
+  color: inherit;
+}
+
+.tiles .tile .s {
+  color: rgba(74, 24, 48, 0.72);
+}
+
+
+/* Dark text readability override — text colour only */
+body,
+.riskcard,
+.statuscard,
+.vitalscard,
+.vbig,
+.watchcard,
+.row,
+.tile,
+.map-card,
+.step,
+.toast,
+.safe-btn,
+.wtoggle,
+.navitem {
+  color: #24121c;
+}
+
+.riskcard .headline,
+.statuscard .big,
+.vbig-num,
+.watchcard .wtitle,
+.row .name,
+.tile .t,
+.profile-head .pname,
+.grace-title,
+h1.title,
+.brand-word,
+.gauge-center .lvl {
+  color: #24121c;
+}
+
+.riskcard .sub,
+.statuscard .sub,
+.row .meta,
+.tile .s,
+.watchcard .wmeta,
+.profile-head .psub,
+.grace-sub,
+.toast,
+.sos-hint,
+.vstat .vlbl,
+.vstat .vval span {
+  color: #4f3742;
+}
+
+
+/* =========================================================
+   DEFENSYS — FINAL AESTHETIC LAYER
+   HTML untouched • Bodoni Moda • Pistachio + dark botanical
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600;6..96,700;6..96,800&display=swap');
+
+/* ---------- Core typography ---------- */
+:root {
+  --font-d: 'Bodoni Moda', Didot, 'Bodoni 72', Georgia, serif;
+  --font-b: 'Bodoni Moda', Didot, 'Bodoni 72', Georgia, serif;
+
+  --ink: #251b20;
+  --ink-soft: #55454d;
+  --ink-muted: #76666e;
+
+  --forest: #18382c;
+  --forest-mid: #28503e;
+  --forest-soft: #dce9d3;
+
+  --plum: #392631;
+  --wine: #552f3a;
+  --mauve: #6b4857;
+
+  --pistachio: #b8d79b;
+  --pistachio-light: #dcebcf;
+  --pistachio-dark: #71915f;
+
+  --cream: #fffaf7;
+  --blush: #f6e9e8;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--font-b) !important;
+  color: var(--ink);
+}
+
+h1.title,
+.hero-name,
+.risk-info .headline,
+.gauge-center .lvl,
+.vstat .vval,
+.vbig-num,
+.profile-head .pname,
+.em-title,
+.grace-title,
+.brand-word,
+.statuscard .big,
+.row .name,
+.tile .t,
+.watchcard .wtitle {
+  font-family: var(--font-d) !important;
+}
+
+/* ---------- Soft luxury app background ---------- */
+body {
+  background:
+    radial-gradient(circle at 12% 5%, rgba(190, 221, 162, .34), transparent 27%),
+    radial-gradient(circle at 88% 86%, rgba(226, 190, 201, .24), transparent 28%),
+    linear-gradient(145deg, #fffaf8 0%, #f8eeec 48%, #f5e9e7 100%) !important;
+}
+
+body::before {
+  opacity: .16 !important;
+}
+
+/* ---------- Phone ---------- */
+.phone {
+  border-color: #21151b !important;
+  background: #fffaf8 !important;
+  box-shadow:
+    0 34px 85px rgba(52, 34, 42, .22),
+    0 0 0 1px rgba(255,255,255,.75) !important;
+}
+
+.screen {
+  background:
+    radial-gradient(430px 280px at 4% -8%, rgba(185, 215, 155, .22), transparent 62%),
+    radial-gradient(360px 270px at 100% 100%, rgba(224, 190, 202, .18), transparent 60%),
+    linear-gradient(160deg, #fffdfb 0%, #f8efed 100%) !important;
+}
+
+/* ---------- Headings ---------- */
+h1.title {
+  color: var(--ink) !important;
+  font-weight: 700 !important;
+}
+
+.eyebrow {
+  color: #6b5a62 !important;
+  font-weight: 700 !important;
+}
+
+/* ---------- Pistachio risk card ---------- */
+.riskcard {
+  background: linear-gradient(135deg, #b9d99c 0%, #a7ca89 100%) !important;
+  border: none !important;
+  color: #1e2b22 !important;
+  box-shadow: 0 14px 28px rgba(81, 105, 68, .18) !important;
+}
+
+.riskcard .headline {
+  color: #38202a !important;
+}
+
+.riskcard .sub {
+  color: #33483a !important;
+}
+
+.gauge-track {
+  stroke: rgba(255,255,255,.30) !important;
+}
+
+.gauge-center .lvl {
+  color: #183126 !important;
+}
+
+.gauge-center .lbl {
+  color: #294237 !important;
+}
+
+/* ---------- Home tiles: dark aesthetic ---------- */
+.tiles .tile {
+  border: none !important;
+  box-shadow: 0 12px 24px rgba(78, 51, 63, 0.15) !important;
+}
+
+.tiles .tile:nth-child(1) {
+  background: linear-gradient(145deg, #19392d, #2b5140) !important;
+}
+.tiles .tile:nth-child(2) {
+  background: linear-gradient(145deg, #3b2833, #533540) !important;
+}
+.tiles .tile:nth-child(3) {
+  background: linear-gradient(145deg, #59313d, #713f49) !important;
+}
+.tiles .tile:nth-child(4) {
+  background: linear-gradient(145deg, #2b4138, #40594e) !important;
+}
+
+.tiles .tile .t,
+.tiles .tile .s {
+  color: #fff9f8 !important;
+}
+
+.tiles .tile .ic {
+  background: rgba(255,255,255,.13) !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+
+/* ---------- Live Location ---------- */
+.mapwrap {
+  border: 2px solid #4a7661 !important;
+  background:
+    linear-gradient(#e0e9e1, #cad8cf),
+    repeating-linear-gradient(0deg, transparent, transparent 38px, #b8cabe 38px, #b8cabe 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 54px, #b8cabe 54px, #b8cabe 56px) !important;
+}
+
+.map-road {
+  background: #a3b7aa !important;
+}
+
+.map-pin .dot-outer {
+  background: rgba(31, 70, 53, .18) !important;
+}
+
+.map-pin .dot-inner {
+  background: #244b3a !important;
+  border-color: #fffaf7 !important;
+}
+
+.zone-pin .zp {
+  background: #5b3845 !important;
+}
+
+.map-card {
+  background: linear-gradient(135deg, #203c31, #2d5040) !important;
+  border-color: #416151 !important;
+  color: #fffaf8 !important;
+}
+
+.map-card > .ic {
+  background: #bfd99f !important;
+  color: #20382d !important;
+}
+
+/* ---------- Treat Zone / list cards ---------- */
+.list .row {
+  background: linear-gradient(135deg, #3b2833, #4b303b) !important;
+  border-color: #5c404b !important;
+  color: #fff9f8 !important;
+  box-shadow: 0 8px 20px rgba(54, 32, 42, .15) !important;
+}
+
+.list .row .name {
+  color: #fff9f8 !important;
+}
+
+.list .row .meta {
+  color: #d7c8cd !important;
+}
+
+.list .row .ic {
+  background: rgba(255,255,255,.10) !important;
+  color: #f0dfe4 !important;
+}
+
+/* ---------- Watch / Vitals ---------- */
+.watchcard {
+  background: linear-gradient(135deg, #e8f0df, #d5e4ca) !important;
+  color: #203229 !important;
+}
+
+.watchcard .wtitle {
+  color: #25392f !important;
+}
+
+.watchcard .wmeta {
+  color: #53645b !important;
+}
+
+.vitalscard,
+.vbig {
+  background: rgba(255,250,248,.92) !important;
+  border-color: rgba(137, 84, 108, 0.1) !important;
+}
+
+.vstat {
+  background: #f0eee8 !important;
+  border-color: rgba(67,54,59,.08) !important;
+}
+
+.vstat .vval {
+  color: #523b46 !important;
+}
+
+.vstat .vlbl,
+.vstat .vval span {
+  color: #66575e !important;
+}
+
+/* ---------- SOS ---------- */
+.sos-btn {
+  background: linear-gradient(145deg, #75424e 0%, #5a303b 65%, #8b4e61 100%) !important;
+  box-shadow: 0 17px 30px -9px rgba(133, 69, 89, 0.48) !important;
+}
+
+.activate-btn {
+  background: linear-gradient(135deg, #703a49, #7a4356) !important;
+}
+
+.em-ring {
+  background: #eadcdf !important;
+}
+
+.em-ring .core {
+  background: linear-gradient(155deg, #75424e, #4c2935) !important;
+}
+
+.safe-btn {
+  background: #513746 !important;
+  color: #fff8f7 !important;
+  border-color: #59404a !important;
+}
+
+/* ---------- Navigation ---------- */
+.navbar {
+  background: rgba(255,250,248,.94) !important;
+  border-color: rgba(68,48,57,.10) !important;
+}
+
+.navitem {
+  color: #6b5b63 !important;
+}
+
+.navitem.active {
+  color: #2e644b !important;
+  background: #dce9d3 !important;
+}
+
+/* ---------- Profile ---------- */
+.profile-head .pname,
+.grace-title {
+  color: #583f4c !important;
+}
+
+.profile-head .psub,
+.grace-sub {
+  color: #675760 !important;
+}
+
+/* ---------- Toast / small UI ---------- */
+.toast {
+  background: rgba(255,250,248,.97) !important;
+  color: #51434a !important;
+}
+
+.toast strong {
+  color: #5b3e4d !important;
+}
+
+/* ---------- Make generic text consistently elegant ---------- */
+.statuscard .big,
+.row .name,
+.tile .t,
+.watchcard .wtitle,
+.grace-title {
+  font-weight: 600 !important;
+  letter-spacing: -.015em;
+}
+
+.risk-info .sub,
+.statuscard .sub,
+.row .meta,
+.tile .s,
+.watchcard .wmeta,
+.profile-head .psub,
+.grace-sub {
+  font-family: var(--font-b) !important;
+}
