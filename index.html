@@ -400,6 +400,16 @@
   let motionHits = [];
   let lastMotionHitAt = 0;
 
+  // Live status other code (renderHome's status badge) polls this so the
+  // shake/gesture trigger state is visible on-screen, not just in console.
+  window.__defensysGestureStatus = {
+    armed: false,          // true once devicemotion listener is attached
+    supported: ('DeviceMotionEvent' in window),
+    lastError: null,       // e.g. 'permission-denied', 'unsupported'
+    lastShakeAt: null,
+    hits: 0
+  };
+
   if (configIsPlaceholder) {
     console.warn('[DefenSys] Firebase is not configured yet.');
   } else {
@@ -615,24 +625,46 @@
     lastMotionHitAt = now;
     motionHits = motionHits.filter(hit => now - hit < 1800);
     motionHits.push(now);
+    window.__defensysGestureStatus.lastShakeAt = now;
+    window.__defensysGestureStatus.hits = motionHits.length;
     if (motionHits.length >= 3) {
       motionHits = [];
-      if (typeof window.simulate === 'function') window.simulate('gesture');
+      window.__defensysGestureStatus.hits = 0;
+      if (typeof window.simulate === 'function') {
+        window.simulate('gesture');
+      } else {
+        console.warn('[DefenSys][gesture] Triple-shake matched, but window.simulate() is not defined yet.');
+      }
     }
   }
 
   async function startGestureListener() {
-    if (motionListenerEnabled || !('DeviceMotionEvent' in window)) return false;
+    if (motionListenerEnabled) return true;
+    if (!('DeviceMotionEvent' in window)) {
+      window.__defensysGestureStatus.supported = false;
+      window.__defensysGestureStatus.lastError = 'unsupported';
+      console.warn('[DefenSys][gesture] DeviceMotionEvent is not supported in this browser.');
+      return false;
+    }
     if (typeof DeviceMotionEvent.requestPermission === 'function') {
       try {
         const permission = await DeviceMotionEvent.requestPermission();
-        if (permission !== 'granted') return false;
+        if (permission !== 'granted') {
+          window.__defensysGestureStatus.lastError = 'permission-denied';
+          console.warn('[DefenSys][gesture] Motion permission was not granted.');
+          return false;
+        }
       } catch (error) {
+        window.__defensysGestureStatus.lastError = error.message;
+        console.warn('[DefenSys][gesture] Permission request failed:', error.message);
         return false;
       }
     }
     window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
     motionListenerEnabled = true;
+    window.__defensysGestureStatus.armed = true;
+    window.__defensysGestureStatus.lastError = null;
+    console.info('[DefenSys][gesture] Shake listener armed.');
     return true;
   }
 
@@ -649,6 +681,7 @@
     if (motionListenerEnabled) {
       window.removeEventListener('devicemotion', handleDeviceMotion);
       motionListenerEnabled = false;
+      window.__defensysGestureStatus.armed = false;
     }
     liveTriggerSessionStarted = false;
   };
@@ -827,10 +860,15 @@ function triggerCodeWordManually() {
 }
 
 function simulate(kind){
-  state.toast = null;
   if((kind === 'gesture' || kind === 'codeword') && state.emergency !== 'idle'){
+    // Don't silently swallow this — a repeated trigger while already mid-emergency
+    // is easy to mistake for "the trigger didn't work at all".
+    console.info('[DefenSys] Trigger ignored — emergency already', state.emergency);
+    showToast('ℹ️', 'Already active', `You're already in ${state.emergency === 'grace' ? 'the cancel window' : 'emergency mode'}. Mark yourself safe first to test again.`);
+    render();
     return;
   }
+  state.toast = null;
   state.triggerType = kind === 'gesture' ? 'GESTURE'
     : kind === 'codeword' ? 'CODE_WORD'
     : 'SOS';
@@ -1435,6 +1473,49 @@ function renderMap(){
   `;
 }
 
+function renderLiveTriggerStatus(){
+  const mic = window.__defensysCodeWordStatus || {armed:false, lastError:null, lastHeard:null};
+  const shake = window.__defensysGestureStatus || {armed:false, supported:true, lastError:null};
+
+  function pill(ok, label){
+    const bg = ok ? 'var(--low-dim)' : 'var(--critical-dim, #FFE7E9)';
+    const fg = ok ? 'var(--low)' : 'var(--critical, #FF4757)';
+    return `<span style="display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:999px; background:${bg}; color:${fg}; font-size:11px; font-weight:600;">${ok ? '●' : '○'} ${label}</span>`;
+  }
+
+  let micLabel = 'Mic listener off';
+  if(mic.armed) micLabel = 'Mic listening';
+  else if(mic.lastError === 'insecure-context') micLabel = 'Mic blocked — needs https/localhost';
+  else if(mic.lastError === 'not-allowed' || mic.lastError === 'service-not-allowed') micLabel = 'Mic blocked — permission denied';
+  else if(mic.lastError === 'unsupported-browser') micLabel = 'Mic unsupported in this browser';
+  else if(mic.lastError) micLabel = `Mic error: ${mic.lastError}`;
+  else micLabel = 'Mic not armed yet — tap anywhere';
+
+  let shakeLabel = 'Shake off';
+  if(shake.armed) shakeLabel = 'Shake armed';
+  else if(!shake.supported) shakeLabel = 'Shake unsupported';
+  else if(shake.lastError === 'permission-denied') shakeLabel = 'Shake blocked — permission denied';
+  else if(shake.lastError) shakeLabel = `Shake error: ${shake.lastError}`;
+  else shakeLabel = 'Shake not armed yet — tap anywhere';
+
+  const heardLine = mic.lastHeard
+    ? `<div class="meta" style="margin-top:4px;">Last heard: “${mic.lastHeard}”</div>`
+    : '';
+
+  return `
+    <div class="row" style="cursor:default;">
+      <div class="ic" style="background:var(--surface); color:var(--text-dim);">📡</div>
+      <div style="flex:1;">
+        <div class="name" style="font-size:12px;">Live trigger status</div>
+        <div style="display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;">
+          ${pill(mic.armed, micLabel)}
+          ${pill(shake.armed, shakeLabel)}
+        </div>
+        ${heardLine}
+      </div>
+    </div>`;
+}
+
 function renderHome(){
   const insecureWarning = window.__defensysInsecureContext__ ? `
       <div class="row notice-row">
@@ -1458,6 +1539,7 @@ function renderHome(){
         </button>
         <div class="sos-hint">Hold, use your secret gesture, or say your code word <strong>“AEGIS”</strong> to trigger discreetly</div>
       </div>
+      <div id="liveTriggerStatus">${renderLiveTriggerStatus()}</div>
       <div class="tiles">
         <div class="tile tile-vivid" style="background:linear-gradient(140deg,#5FA8FF,#1D6FE0);" onclick="nav('map')"><div class="ic" style="background:rgba(255,255,255,0.25); color:#fff;">📍</div><div class="t" style="color:#fff;">Live location</div><div class="s" style="color:rgba(255,255,255,0.8);">Sharing with contacts</div></div>
         <div class="tile tile-vivid" style="background:linear-gradient(140deg,#3DDCC0,#00A88F);" onclick="nav('zones')"><div class="ic" style="background:rgba(255,255,255,0.25); color:#fff;">🛡️</div><div class="t" style="color:#fff;">Threat zones</div><div class="s" style="color:rgba(255,255,255,0.8);">${zones.length} active zones</div></div>
@@ -1843,6 +1925,15 @@ window.__defensysAuthReady__ = function(user){
 render();
 window.__defensysRerender__ = render;
 setInterval(tickVitals, 2000);
+
+// Lightweight poll (independent of the main render() cycle) so the live
+// trigger status badge reflects mic/shake state within ~1s, on-screen,
+// without needing DevTools plugged into the phone.
+setInterval(() => {
+  if (state.screen !== 'home') return;
+  const el = document.getElementById('liveTriggerStatus');
+  if (el) el.innerHTML = renderLiveTriggerStatus();
+}, 1000);
 </script>
 </body>
 </html>
